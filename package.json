@@ -1,0 +1,17 @@
+{
+  "name": "usv-events",
+  "version": "1.0.0",
+  "description": "USV Events Management Platform commands",
+  "scripts": {
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "seed": "docker exec -it usv_events_backend python -m app.seed",
+    "test": "docker exec -it usv_events_backend pytest",
+    "build:frontend": "npm run build --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "db:sh": "docker exec -it usv_events_db psql -U root -d events_db",
+    "backend:sh": "docker exec -it usv_events_backend bash",
+    "restart": "docker-compose down && docker-compose up -d"
+  }
+}

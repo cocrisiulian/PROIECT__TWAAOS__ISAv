@@ -1,4 +1,4 @@
-import { formatTime } from 'date-fns';
+import { format } from 'date-fns';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,8 +56,8 @@ export default function DayEventsModal({ date, events, isOpen, onClose }) {
           ) : (
             <div className="space-y-3">
               {sortedEvents.map((event, index) => {
-                const startTime = formatTime(new Date(event.start_datetime), 'HH:mm');
-                const endTime = formatTime(new Date(event.end_datetime), 'HH:mm');
+                const startTime = format(new Date(event.start_datetime), 'HH:mm');
+                const endTime = format(new Date(event.end_datetime), 'HH:mm');
 
                 return (
                   <div

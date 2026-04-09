@@ -94,6 +94,36 @@ Pentru a sterge si volumele (inclusiv datele din PostgreSQL):
 docker-compose down -v
 ```
 
+### 6. Reconstruire Docker doar daca sunt modificari
+
+Dupa ce modifici fisierul `docker-compose.yml`, poti rula:
+
+**Cu npm (cross-platform):**
+```bash
+npm run docker:rebuild-if-changed
+```
+
+**Cu script Bash (Linux/macOS):**
+```bash
+chmod +x docker-rebuild-if-changed.sh
+./docker-rebuild-if-changed.sh
+```
+
+**Cu script PowerShell (Windows):**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.\docker-rebuild-if-changed.ps1
+```
+
+Scriptele vor:
+- ✅ Verifica daca s-a modificat `docker-compose.yml`
+- ✅ Afiseaza modificarile detectate
+- ✅ Oprit containerele vechi
+- ✅ Reconstituie si pornit containerele noi cu build
+- ✅ Afiseaza status final
+
+Daca nu sunt modificari, scriptele termina fara a face nimic.
+
 ### Migrare DB fara reset volum (waitlist)
 
 Dupa update-ul de cod care introduce status la inscrieri, ruleaza o singura data:

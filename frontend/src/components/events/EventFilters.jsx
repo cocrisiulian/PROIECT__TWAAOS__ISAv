@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getCategories, getFaculties } from '../../api/events.js';
 
 function EventFilters() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchText, setSearchText] = useState(searchParams.get('search') || '');
   const debounceRef = useRef(null);
@@ -105,30 +107,30 @@ function EventFilters() {
   return (
     <aside className="w-full space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-700">Filters</h3>
+        <h3 className="font-semibold text-gray-700">{t('events.filters.search')}</h3>
         <button
           onClick={clearAll}
           className="text-xs text-blue-600 hover:underline"
         >
-          Clear all
+          {t('events.filters.clearAll')}
         </button>
       </div>
 
       {/* Search */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Search</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{t('events.filters.search')}</label>
         <input
           type="text"
           value={searchText}
           onChange={handleSearchChange}
-          placeholder="Search events..."
+          placeholder={t('events.filters.search')}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
       {/* Category */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{t('events.filters.category')}</label>
         <select
           value={searchParams.get('category_id') || ''}
           onChange={(e) => updateParam('category_id', e.target.value)}
@@ -143,7 +145,7 @@ function EventFilters() {
 
       {/* Faculty */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Faculty</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{t('events.filters.faculty')}</label>
         <select
           value={searchParams.get('faculty_id') || ''}
           onChange={(e) => updateParam('faculty_id', e.target.value)}
@@ -158,7 +160,7 @@ function EventFilters() {
 
       {/* Participation Mode */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-2">Participation Mode</label>
+        <label className="block text-xs font-medium text-gray-600 mb-2">{t('events.filters.mode')}</label>
         <div className="space-y-1.5">
           {['', 'physical', 'online', 'hybrid'].map((mode) => (
             <label key={mode} className="flex items-center gap-2 cursor-pointer">
@@ -185,7 +187,7 @@ function EventFilters() {
             onChange={(e) => updateParam('is_free', e.target.checked ? 'true' : '')}
             className="rounded"
           />
-          <span className="text-sm text-gray-700">Free events only</span>
+          <span className="text-sm text-gray-700">{t('events.filters.isFree')}</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -231,7 +233,7 @@ function EventFilters() {
             }}
             className="rounded"
           />
-          <span className="text-sm text-gray-700">Advanced OR (Group A OR Group B)</span>
+          <span className="text-sm text-gray-700">{t('events.filters.advancedFilters')}</span>
         </label>
 
         {useAdvancedOr && (

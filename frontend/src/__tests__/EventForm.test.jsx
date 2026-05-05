@@ -29,6 +29,14 @@ function renderForm(props = {}) {
 }
 
 describe('EventForm create flow', () => {
+  beforeEach(() => {
+    vi.stubGlobal('alert', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('renders lookup options from API without crashing (no blank page)', async () => {
     renderForm();
 
@@ -49,7 +57,7 @@ describe('EventForm create flow', () => {
     fireEvent.change(dateTimeInputs[0], { target: { value: '2026-03-20T10:00' } });
     fireEvent.change(dateTimeInputs[1], { target: { value: '2026-03-20T12:00' } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save Event' }));
+    fireEvent.click(screen.getByRole('button', { name: /save event/i }));
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -62,5 +70,39 @@ describe('EventForm create flow', () => {
     expect(payload.faculty_id).toBeNull();
     expect(payload.department_id).toBeNull();
     expect(payload.category_id).toBeNull();
+  });
+
+  it('blocks submission when end date is not after start date', async () => {
+    const onSubmit = vi.fn();
+    renderForm({ onSubmit });
+
+    fireEvent.change(screen.getByPlaceholderText('Event title'), { target: { value: 'Eveniment Test' } });
+    fireEvent.change(screen.getByPlaceholderText('Describe the event...'), { target: { value: 'Descriere test' } });
+
+    const dateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+    fireEvent.change(dateTimeInputs[0], { target: { value: '2026-03-20T12:00' } });
+    fireEvent.change(dateTimeInputs[1], { target: { value: '2026-03-20T10:00' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /save event/i }));
+
+    await waitFor(() => {
+      expect(globalThis.alert).toHaveBeenCalledTimes(1);
+    });
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('shows registration fields only when required registration is enabled', async () => {
+    renderForm();
+
+    expect(screen.queryByLabelText(/registration link/i)).toBeNull();
+    expect(screen.queryByLabelText(/max participants/i)).toBeNull();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /requires registration/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/registration link \(optional\)/i)).toBeTruthy();
+      expect(screen.getByText(/max participants \(optional\)/i)).toBeTruthy();
+    });
   });
 });

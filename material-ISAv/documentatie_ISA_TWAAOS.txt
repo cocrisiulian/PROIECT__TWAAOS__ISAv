@@ -1,0 +1,260 @@
+DOCUMENTAȚIE PROIECT ISA
+Platformă web pentru managementul evenimentelor universitare USV
+
+A. PRODUCT VISION
+
+Aplicația a fost concepută pentru a răspunde unei nevoi recurente întâlnite în mediul universitar: organizarea și administrarea evenimentelor prin canale fragmentate, cu procese manuale de publicare, aprobare și înscriere, adesea lipsite de trasabilitate și consistență operațională. Platforma propune un cadru unitar în care informația despre evenimente este centralizată, iar activitățile de creare, moderare, înscriere și monitorizare sunt susținute digital, într-un mod coerent și ușor de urmărit.
+
+Din perspectivă funcțională, sistemul oferă un portal public pentru vizualizarea evenimentelor, mecanisme de autentificare și autorizare pe roluri, un modul dedicat organizatorilor pentru gestionarea conținutului și un modul de administrare pentru controlul conturilor și al nomenclatoarelor. În ansamblu, aplicația urmărește să reducă efortul operațional, să crească transparența fluxurilor de lucru și să faciliteze participarea comunității academice la evenimente relevante.
+
+Principalele categorii de utilizatori sunt:
+- vizitatorul neautentificat, care poate consulta evenimentele publice și detaliile acestora;
+- studentul, care se autentifică prin Google OAuth și poate participa la evenimente;
+- organizatorul, care creează, actualizează, retrimite și gestionează evenimentele proprii;
+- administratorul, care validează conținutul, gestionează conturile și întreține nomenclatoarele sistemului.
+
+Valoarea adusă de platformă poate fi sintetizată astfel:
+- centralizarea informațiilor despre evenimente într-o singură aplicație;
+- diminuarea timpului necesar pentru publicare și aprobare;
+- creșterea trasabilității prin statusuri explicite ale evenimentelor;
+- simplificarea înscrierii și a comunicării cu participanții;
+- creșterea nivelului de securitate prin autentificare și controlul accesului pe roluri;
+- asigurarea unei baze pentru extindere ulterioară către notificări, calendar și raportare.
+
+Arhitectura tehnologică utilizată este următoarea:
+- backend: Python, FastAPI, SQLAlchemy;
+- frontend: React, Vite;
+- baza de date: PostgreSQL;
+- autentificare: JWT și Google OAuth;
+- infrastructură: Docker și docker-compose;
+- biblioteci frontend: React Query, Zustand, Axios și Tailwind CSS [de completat dacă se dorește menționarea explicită].
+
+B. CAIETUL DE SARCINI REZUMAT
+
+Cerințe generale:
+- aplicație web accesibilă din browser;
+- interfață responsivă, adaptată dispozitivelor desktop și mobile;
+- autentificare și autorizare pe roluri;
+- persistența datelor într-o bază de date relațională;
+- separarea clară a zonelor publice, administrative și operaționale;
+- securizarea acțiunilor sensibile prin tokenuri și validarea rolului;
+- suport pentru încărcarea și gestionarea fișierelor asociate evenimentelor.
+
+Cerințe specifice:
+- afișarea listei de evenimente publice și filtrarea acestora;
+- vizualizarea detaliilor unui eveniment;
+- autentificarea studenților prin Google OAuth;
+- înscrierea și retragerea de la evenimente;
+- crearea, editarea și retrimiterea unui eveniment de către organizator;
+- anularea unui eveniment deja publicat;
+- aprobarea sau respingerea unui eveniment de către administrator;
+- administrarea conturilor utilizatorilor;
+- gestionarea facultăților, departamentelor și categoriilor;
+- încărcarea și ștergerea materialelor aferente unui eveniment;
+- exportul listei de participanți în format CSV;
+- consultarea statisticilor de participare și feedback;
+- transmiterea feedback-ului după încheierea evenimentului.
+
+Actorii principali sunt:
+- utilizatorul neautentificat;
+- studentul;
+- organizatorul;
+- administratorul.
+
+Cazuri de utilizare identificate:
+1. Vizualizarea listei de evenimente.
+2. Vizualizarea detaliilor unui eveniment.
+3. Autentificarea studentului prin Google.
+4. Înscrierea la un eveniment.
+5. Retragerea înscrierii.
+6. Crearea unui eveniment.
+7. Editarea și retrimiterea unui eveniment.
+8. Anularea unui eveniment publicat.
+9. Aprobarea sau respingerea unui eveniment.
+10. Administrarea conturilor utilizatorilor.
+11. Gestionarea facultăților, departamentelor și categoriilor.
+12. Încărcarea și ștergerea materialelor.
+13. Exportul participanților.
+14. Vizualizarea statisticilor unui eveniment.
+15. Transmiterea feedback-ului.
+
+C. ANALIZA RISCURILOR
+
+Analiza SWOT
+
+Puncte tari:
+- arhitectură clar separată între frontend și backend;
+- fluxuri bine definite pe roluri și pe statusuri;
+- integrare modernă a autentificării prin Google OAuth;
+- utilizarea unei baze de date relaționale, adecvate datelor structurate;
+- posibilitatea de extindere prin modularizarea routerelor și a componentelor.
+
+Puncte slabe:
+- dependență de o integrare corectă între mai multe servicii;
+- complexitate de business în gestionarea statusurilor evenimentelor;
+- necesitatea verificării manuale a unor rezultate generate sau asistate de GenAI;
+- riscul de neconcordanță între seed, migrare și datele reale din baza de date.
+
+Oportunități:
+- extinderea aplicației cu notificări, calendar și rapoarte avansate;
+- utilizarea platformei la nivelul mai multor facultăți sau departamente;
+- automatizarea unor activități administrative recurente;
+- integrarea cu sisteme instituționale existente.
+
+Amenințări:
+- erori de configurare în timpul deployment-ului sau în containere;
+- vulnerabilități de securitate în cazul validării insuficiente a permisiunilor;
+- blocaje cauzate de schimbări în API-urile externe;
+- scăderea performanței în cazul creșterii volumului de date și a traficului.
+
+Registru de risc:
+
+| Risc | Descriere | Probabilitate | Impact | Măsuri de atenuare |
+|---|---|---:|---:|---|
+| Configurare greșită a OAuth | Redirect URI sau credențiale Google configurate incorect | Medie | Ridicat | Validare la startup, mesaje clare de eroare, testare în mediul local și în containere |
+| Inconsistență la seed/migrare | Datele inițiale lipsesc, sunt parțial create sau se dublează | Medie | Mediu | Seed idempotent, migrare automată la pornire, verificări de existență înainte de insert |
+| Erori de permisiuni | Utilizatorii accesează funcții care nu corespund rolului lor | Scăzută | Ridicat | Control pe roluri la nivel de endpoint, testare separată pentru fiecare rol |
+| Confuzie în fluxul de statusuri | Evenimentele rejected/cancelled nu sunt înțelese suficient de clar | Medie | Mediu | Mesaje explicite în UI, afișarea motivului respingerii, documentarea statusurilor |
+| Probleme de networking în containere | Frontend nu poate apela backend din cauza unei ținte proxy greșite | Medie | Ridicat | Folosirea numelui serviciului Docker în proxy, testare end-to-end după build |
+| Upload de fișiere mari sau invalide | Materialele sau imaginile depășesc limitele sau au format nevalid | Medie | Mediu | Validare dimensiune și tip MIME, mesaje de eroare, limitări la nivel backend |
+| Suprasarcină pe interfața administrativă | Număr mare de utilizatori/evenimente în paginile de management | Scăzută | Mediu | Paginare, căutare server-side și optimizarea interogărilor |
+
+D. DESCRIEREA DIAGRAMELOR UML
+
+Diagrama cazurilor de utilizare
+
+Actorii principali sunt: utilizator neautentificat, student, organizator și administrator.
+
+Relațiile principale sunt următoarele:
+- utilizatorul neautentificat poate vizualiza lista evenimentelor și detaliile acestora;
+- studentul, după autentificare, poate consulta evenimentele, se poate înscrie și poate transmite feedback;
+- organizatorul poate crea, edita, anula, retrimite și administra evenimentele proprii;
+- administratorul poate aproba, respinge, activa sau dezactiva conturi și poate gestiona nomenclatoarele.
+
+Relații de tip include/extend recomandate:
+- „Vizualizare detalii eveniment” include „Vizualizare listă evenimente”;
+- „Editare eveniment” se poate extinde cu „Retrimitere la aprobare” în cazul statusurilor rejected sau cancelled;
+- „Respingere eveniment” include introducerea unui motiv scurt;
+- „Autentificare student” include validarea tokenului Google OAuth.
+
+Diagrama de clase
+
+Clasele principale ale domeniului sunt:
+- User: id, username, email, hashed_password, full_name, role, is_active, created_at;
+- Student: id, email, full_name, google_sub, avatar_url, created_at, last_login_at;
+- Event: id, title, description, start_datetime, end_datetime, location, online_link, participation_mode, is_free, requires_registration, max_participants, cover_image_url, status, organizer_id, faculty_id, department_id, category_id, approved_by_id, approved_at, rejection_reason;
+- EventRegistration: id, event_id, student_id, status, registered_at, checked_in, checked_in_at;
+- EventMaterial: id, event_id, original_filename, stored_filename, file_url, file_type, file_size_bytes, uploaded_by_id;
+- Feedback: id, event_id, student_id, rating, comment, created_at;
+- Faculty: id, name, short_name;
+- Department: id, name, faculty_id;
+- Category: id, name, color_hex.
+
+Relațiile importante sunt:
+- User are relație 1:N cu Event ca organizator;
+- User are relație 1:N cu Event ca approver;
+- Faculty are relație 1:N cu Department;
+- Faculty are relație 1:N cu Event;
+- Department are relație 1:N cu Event;
+- Category are relație 1:N cu Event;
+- Event are relație 1:N cu EventRegistration, EventMaterial și Feedback;
+- Student are relație 1:N cu EventRegistration și Feedback.
+
+Diagrama de componente
+
+Arhitectura aplicației poate fi descrisă în trei niveluri:
+- componenta de prezentare: aplicația frontend realizată în React/Vite;
+- componenta de logică: API-ul FastAPI, organizat în routere pentru autentificare, public, organizator, admin și export;
+- componenta de date: baza de date PostgreSQL.
+
+Conexiunile principale sunt:
+- browserul comunică cu frontend-ul;
+- frontend-ul apelează backend-ul prin cereri REST/JSON;
+- backend-ul comunică cu PostgreSQL prin SQLAlchemy;
+- backend-ul comunică cu Google OAuth pentru autentificarea studenților;
+- backend-ul citește și scrie fișiere în directorul de uploads.
+
+E. RAPORTUL DE CERCETARE – DRAFT INTERMEDIAR
+
+1. Introducere
+Inteligența artificială generativă a devenit, în ultimii ani, un instrument important în ingineria software, fiind utilizată pentru generarea de cod, documentație, teste, explicații arhitecturale și suport în activități de depanare. În același timp, adoptarea acestor modele ridică probleme legate de acuratețea rezultatelor, de securitate și de necesitatea formulării unor prompturi bine structurate.
+
+Scopul cercetării de față este de a analiza, printr-un studiu de caz aplicat, modul în care GenAI a sprijinit dezvoltarea unei platforme web pentru managementul evenimentelor universitare. Întrebările de cercetare urmărite au fost:
+- în ce măsură GenAI poate accelera implementarea și documentarea funcționalităților;
+- ce categorii de sarcini beneficiază cel mai mult de asistența bazată pe prompturi;
+- ce limitări apar și ce rol are validarea umană în corectarea rezultatelor generate.
+
+2. Fundamentare teoretică
+Modelele lingvistice de mari dimensiuni (LLM) sunt antrenate pe volume mari de text și, în anumite contexte, pe cod sursă, pentru a genera răspunsuri coerente, a completa texte sau a produce fragmente de cod. În ingineria software, aceste modele sunt utilizate în analiza cerințelor, proiectare, generare de cod, testare, documentare și refactorizare.
+
+Prompt engineering reprezintă procesul de formulare clară și contextualizată a cererilor adresate modelului, astfel încât răspunsul obținut să fie relevant și aplicabil. Eficiența unui LLM depinde în mod semnificativ de:
+- claritatea cerinței;
+- contextul tehnic oferit;
+- iterarea prompturilor;
+- validarea manuală a rezultatului;
+- integrarea cu instrumentele de dezvoltare și testare.
+
+3. Metodologia cercetării
+Instrumentul AI utilizat în cadrul dezvoltării a fost GitHub Copilot Chat.
+
+Colectarea datelor pentru studiu s-a realizat prin:
+- salvarea prompturilor utilizate în timpul dezvoltării;
+- păstrarea răspunsurilor relevante oferite de model;
+- observarea necesității de follow-up și a corecțiilor aplicate;
+- verificarea soluțiilor prin rulare locală, loguri și testare API;
+- clasificarea prompturilor pe categorii precum autentificare, administrare, fluxuri de status și automatizare la startup.
+
+Criteriile de evaluare au fost:
+- corectitudinea tehnică a răspunsului;
+- compatibilitatea cu arhitectura proiectului;
+- necesitatea de ajustări suplimentare;
+- impactul asupra fluxului de lucru;
+- necesitatea validării umane.
+
+4. Studiu de caz: aplicarea GenAI în proiectul Sistem de management al evenimentelor universitare USV
+Proiectul analizat este o platformă web pentru publicarea și administrarea evenimentelor universitare, cu roluri distincte pentru student, organizator și administrator. Sistemul include autentificare, management de evenimente, aprobare, respingere, gestionarea materialelor, statistici și administrare de conturi.
+
+Analiza prompturilor folosite:
+
+| Prompt | Răspuns primit (rezumat) | Corectitudine | Erori / limitări | Follow-up necesar | Impact asupra fluxului de lucru |
+|---|---|---|---|---|---|
+| „Termină partea de login cu Google OAuth, acum există în env părțile necesare.” | A identificat componentele existente, a completat validarea configurației OAuth, callback-ul frontend și tratarea erorilor de autentificare. | Ridicată | A apărut o problemă de networking în Docker, unde proxy-ul frontend folosea localhost în interiorul containerului. | Da, a fost necesară validare prin loguri și ajustarea proxy-ului către serviciul backend. | A accelerat integrarea și a clarificat zona în care trebuia aplicată configurarea. |
+| „Creează și posibilitatea de a șterge un cont doar după ce este dezactivat.” | A introdus endpointul de ștergere cu regulă de business: ștergere doar pentru conturi inactive și blocarea auto-ștergerii. | Ridicată | Nu au apărut erori funcționale majore; a fost necesară alinierea UI cu backend-ul. | Minim, doar integrarea butonului în pagina de administrare și verificarea răspunsurilor API. | A simplificat implementarea controlului de acces și a redus riscul de ștergere accidentală. |
+| „Creează posibilitatea de a modifica și resubmit pentru cele cancelled și un mesaj scurt de ce a fost rejected.” | A modificat fluxul de status astfel încât evenimentele cancelled și rejected pot fi editate și retrimise; a adăugat motivul respingerii. | Ridicată | A fost nevoie de un motiv implicit scurt dacă adminul nu introducea unul. | Da, a fost necesară ajustarea UI pentru afișarea motivului și testarea fluxului complet. | A îmbunătățit claritatea procesului de moderare și experiența organizatorului. |
+
+Concluzii preliminare:
+- GenAI a fost eficient în formularea rapidă a soluțiilor tehnice și în identificarea zonelor de implementare.
+- Cea mai mare valoare a apărut în sarcini repetitive sau structurale: autentificare, reguli de status, CRUD și configurare.
+- Modelele nu au înlocuit validarea umană; au fost necesare teste, loguri și ajustări de configurare.
+- Utilizarea iterativă a prompturilor, combinată cu feedback din execuție, a crescut calitatea finală a soluției.
+
+5. Discuții și limitări
+Utilizarea GenAI a redus timpul necesar pentru conceperea și implementarea unor funcționalități standard, însă a evidențiat și anumite limite importante:
+- răspunsurile pot fi corecte din punct de vedere logic, dar incomplete din perspectiva mediului de execuție;
+- unele sugestii necesită adaptare la contextul exact al proiectului;
+- pot apărea erori de integrare între frontend, backend și containere;
+- este necesară verificarea atentă a mesajelor de eroare și a comportamentului în runtime;
+- modelele nu garantează corectitudinea regulilor de securitate sau a logicii de business fără validare umană.
+
+În plus, prompturile eficiente au fost cele care au oferit suficient context și au cerut un rezultat clar, în timp ce prompturile vagi au generat răspunsuri mai generale sau au impus clarificări suplimentare.
+
+6. Concluzii și direcții viitoare
+Studiul de caz arată că GenAI poate susține semnificativ dezvoltarea unei platforme web universitare, în special în etapele de implementare rapidă, documentare și remediere a fluxurilor. Totuși, valoarea maximă apare atunci când modelul este utilizat iterativ, iar rezultatele sunt validate prin teste și prin analiza logurilor aplicației.
+
+Direcții viitoare posibile:
+- extinderea platformei cu notificări în timp real;
+- adăugarea de testare automatizată suplimentară;
+- integrarea unui calendar academic;
+- generarea automată de rapoarte de utilizare;
+- folosirea GenAI pentru generarea de teste și documentație tehnică structurată.
+
+7. Bibliografie
+1. Chen, M., Tworek, J., Jun, H., Yuan, Q., de Oliveira Pinto, H. P., Kaplan, J., et al. (2021). Evaluating large language models trained on code. arXiv preprint arXiv:2107.03374.
+2. OpenAI. (2023). GPT-4 technical report. arXiv preprint arXiv:2303.08774.
+3. Rozière, B., Gehring, J., Gloeckle, F., et al. (2023). Code Llama: Open foundation models for code. arXiv preprint arXiv:2308.12950.
+4. Nijkamp, E., Hayashi, H., Xiong, C., Savarese, S., & Zhou, Y. (2023). CodeGen2: Lessons for training LLMs on code. arXiv preprint arXiv:2307.09422.
+5. Vaithilingam, P., Zhang, T., & Glassman, E. L. (2022). Expectation vs. experience: Evaluating the usability of code generation tools powered by large language models. In Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems.
+6. Pearce, H., Ahmad, W., Tan, B., Dolan-Gavitt, B., & Karri, R. (2023). Asleep at the keyboard? Assessing the security of GitHub Copilot’s code contributions. In 2023 IEEE Symposium on Security and Privacy.
+7. GitHub. (2024). GitHub Copilot documentation. https://docs.github.com/en/copilot
+
+Notă: câmpurile marcate [de completat] pot fi adaptate ulterior cu detalii exacte despre instrumentele AI sau cu formulări specifice solicitate de coordonator.

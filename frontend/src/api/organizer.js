@@ -36,3 +36,13 @@ export const deleteMaterial = (eventId, materialId) =>
   api.delete(`/organizer/events/${eventId}/materials/${materialId}`);
 
 export const getEventStats = (id) => api.get(`/organizer/events/${id}/stats`);
+
+export const uploadCoverImage = (file, crops) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('crops', JSON.stringify(crops));
+
+  return api.post('/organizer/images/cover', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};

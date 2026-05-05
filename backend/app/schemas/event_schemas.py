@@ -64,6 +64,7 @@ class EventListItem(BaseModel):
     faculty: Optional[FacultyRead] = None
     organizer: Optional[UserRead] = None
     registration_count: Optional[int] = None
+    rejection_reason: Optional[str] = None
 
 
 class EventDetail(EventListItem):

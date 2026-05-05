@@ -2,12 +2,14 @@ import os
 import uuid
 import csv
 import io
+import json
 from typing import Optional, List
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Form
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
+from PIL import Image, UnidentifiedImageError
 
 from app.database import get_db
 from app.config import settings
@@ -33,6 +35,30 @@ ALLOWED_MIME_TYPES = {
     "application/zip": MaterialType.other,
 }
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+MAX_COVER_IMAGE_SIZE = 12 * 1024 * 1024  # 12MB
+
+IMAGE_VARIANTS = {
+    "card": {"width": 960, "height": 540},
+    "list": {"width": 1400, "height": 500},
+    "background": {"width": 1920, "height": 640},
+}
+
+
+def _normalize_crop(crop: dict, image_width: int, image_height: int):
+    x = max(0, int(crop.get("x", 0)))
+    y = max(0, int(crop.get("y", 0)))
+    width = max(1, int(crop.get("width", image_width)))
+    height = max(1, int(crop.get("height", image_height)))
+
+    if x >= image_width:
+        x = image_width - 1
+    if y >= image_height:
+        y = image_height - 1
+
+    width = min(width, image_width - x)
+    height = min(height, image_height - y)
+
+    return x, y, width, height
 
 
 @router.get("/events", response_model=dict)
@@ -109,8 +135,9 @@ def update_event(
         raise HTTPException(status_code=400, detail="Cannot edit a published event. Cancel it first.")
     for k, v in body.model_dump(exclude_unset=True).items():
         setattr(event, k, v)
-    if event.status == EventStatus.rejected:
+    if event.status in (EventStatus.rejected, EventStatus.cancelled):
         event.status = EventStatus.draft
+        event.rejection_reason = None
     db.commit()
     db.refresh(event)
     return EventDetail.model_validate(event)
@@ -121,9 +148,10 @@ def submit_for_approval(event_id: str, db: Session = Depends(get_db), user=Depen
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event or str(event.organizer_id) != str(user.id):
         raise HTTPException(status_code=404, detail="Event not found")
-    if event.status != EventStatus.draft:
-        raise HTTPException(status_code=400, detail="Only draft events can be submitted")
+    if event.status not in (EventStatus.draft, EventStatus.rejected, EventStatus.cancelled):
+        raise HTTPException(status_code=400, detail="Only draft, rejected, or cancelled events can be submitted")
     event.status = EventStatus.pending_approval
+    event.rejection_reason = None
     db.commit()
     return {"detail": "Submitted for approval"}
 
@@ -225,6 +253,76 @@ def check_in_participant(
     reg.checked_in_at = datetime.utcnow()
     db.commit()
     return {"detail": "Checked in"}
+
+
+@router.post("/images/cover", status_code=201)
+async def upload_cover_image(
+    file: UploadFile = File(...),
+    crops: str = Form(...),
+    user=Depends(require_organizer),
+):
+    content_type = file.content_type or ""
+    if content_type not in {"image/jpeg", "image/png", "image/webp", "image/gif"}:
+        raise HTTPException(status_code=400, detail="Only JPG, PNG, WEBP, and GIF images are supported")
+
+    content = await file.read()
+    if len(content) > MAX_COVER_IMAGE_SIZE:
+        raise HTTPException(status_code=400, detail="Cover image exceeds 12MB limit")
+
+    try:
+        crops_data = json.loads(crops)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid crop payload")
+
+    if not isinstance(crops_data, dict):
+        raise HTTPException(status_code=400, detail="Crop payload must be an object")
+
+    try:
+        source = Image.open(io.BytesIO(content))
+        source.load()
+    except (UnidentifiedImageError, OSError):
+        raise HTTPException(status_code=400, detail="Invalid image file")
+
+    if source.mode not in ("RGB", "RGBA"):
+        source = source.convert("RGB")
+
+    image_width, image_height = source.size
+    if image_width < 300 or image_height < 200:
+        raise HTTPException(status_code=400, detail="Image is too small. Use at least 300x200")
+
+    upload_dir = os.path.join(settings.UPLOAD_DIR, "covers", str(user.id))
+    os.makedirs(upload_dir, exist_ok=True)
+
+    base_name = str(uuid.uuid4())
+    variant_urls = {}
+
+    for variant, target in IMAGE_VARIANTS.items():
+        crop = crops_data.get(variant, {})
+        if not isinstance(crop, dict):
+            raise HTTPException(status_code=400, detail=f"Invalid crop for variant '{variant}'")
+
+        x, y, width, height = _normalize_crop(crop, image_width, image_height)
+
+        cropped = source.crop((x, y, x + width, y + height))
+        resized = cropped.resize((target["width"], target["height"]), Image.Resampling.LANCZOS)
+
+        filename = f"{base_name}_{variant}.webp"
+        file_path = os.path.join(upload_dir, filename)
+        resized.save(file_path, "WEBP", quality=84, optimize=True, method=6)
+
+        variant_urls[variant] = f"/uploads/covers/{user.id}/{filename}"
+
+    payload = {
+        "type": "event_cover_variants",
+        "card": variant_urls["card"],
+        "list": variant_urls["list"],
+        "background": variant_urls["background"],
+    }
+
+    return {
+        "cover_image_url": json.dumps(payload),
+        "variants": payload,
+    }
 
 
 @router.post("/events/{event_id}/materials", status_code=201)

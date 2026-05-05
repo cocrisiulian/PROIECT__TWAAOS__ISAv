@@ -1,0 +1,493 @@
+{
+  "nav": {
+    "brand": "Evenimente USV",
+    "events": "Evenimente",
+    "calendar": "Calendar",
+    "account": "Contul meu",
+    "dashboard": "Panou",
+    "admin": "Admin",
+    "users": "Utilizatori",
+    "login": "Autentificare",
+    "logout": "Deconectare",
+    "authenticated": "Autentificat"
+  },
+  "hero": {
+    "title": "Descopera evenimentele universitatii tale",
+    "subtitle": "Conferinte, workshop-uri si activitati pentru studenti, intr-un singur loc.",
+    "ctaPrimary": "Vezi evenimentele",
+    "ctaSecondary": "Contacteaza-ne"
+  },
+  "contact": {
+    "title": "Formular de contact",
+    "namePlaceholder": "Numele tau",
+    "emailPlaceholder": "Adresa de email",
+    "messagePlaceholder": "Scrie mesajul tau aici",
+    "submit": "Trimite",
+    "errors": {
+      "requiredName": "Numele este obligatoriu.",
+      "requiredEmail": "Email-ul este obligatoriu.",
+      "invalidEmail": "Introdu o adresa de email valida.",
+      "requiredMessage": "Mesajul nu poate fi gol."
+    }
+  },
+  "common": {
+    "language": "Limba",
+    "romanian": "Romana",
+    "english": "Engleza"
+  },
+  "auth": {
+    "login": {
+      "title": "USV Events",
+      "subtitle": "University Event Management System",
+      "studentSection": "Autentificare Student",
+      "studentDesc": "Folosește contul tău de Google din universitate pentru a te conecta.",
+      "staffSection": "Autentificare Personal",
+      "staffDesc": "Pentru organizatori și administratori.",
+      "username": "Nume utilizator",
+      "password": "Parolă",
+      "signIn": "Conectare",
+      "signingIn": "Se conectează...",
+      "createAccount": "Crează cont",
+      "forgotPassword": "Ai uitat parola?",
+      "googleSignIn": "Conectare cu Google",
+      "googleRedirecting": "Se redirecționează...",
+      "emailOnly": "@student.usv.ro doar",
+      "errors": {
+        "fillFields": "Completează nume utilizator și parolă.",
+        "invalidCredentials": "Credențiale invalide.",
+        "forbidden": "Nu ai permisiunea necesară pentru autentificare cu acest cont.",
+        "roleVisitor": "Contul tău este de tip vizitator. Cere administratorului să îți atribuie rol de organizator sau admin.",
+        "loginFailed": "Autentificarea a eșuat. Încearcă din nou."
+      }
+    },
+    "signup": {
+      "title": "Crează cont",
+      "subtitle": "Înscrie-te pentru a accesa contul tău USV Events.",
+      "username": "Nume utilizator",
+      "fullName": "Nume complet",
+      "email": "Email",
+      "password": "Parolă",
+      "confirmPassword": "Confirmă parola",
+      "signUp": "Înscrie-te",
+      "creatingAccount": "Se creează cont...",
+      "alreadyHaveAccount": "Ai deja cont?  ",
+      "signInHere": "Conectează-te",
+      "passwordHint": "Minim 8 caractere",
+      "confirmPasswordHint": "Re-introdu parola",
+      "usernamePlaceholder": "nume_utilizator",
+      "fullNamePlaceholder": "Numele tău complet",
+      "emailPlaceholder": "tu@exemplu.com",
+      "errors": {
+        "fillAllFields": "Completează toate câmpurile obligatorii.",
+        "passwordsMismatch": "Parolele nu se potrivesc.",
+        "creationFailed": "Nu am putut crea contul."
+      }
+    },
+    "forgotPassword": {
+      "title": "Resetează parola",
+      "subtitle": "Introdu email-ul contului și vom genera un token de resetare.",
+      "email": "Email",
+      "requestReset": "Solicitare resetare",
+      "generatingToken": "Se generează token...",
+      "backToLogin": "Înapoi la",
+      "resetToken": "Token de resetare (de test):",
+      "continueToReset": "Continuă la formular de resetare",
+      "successMessage": "Dacă contul există, instrucțiuni de resetare au fost generate.",
+      "errors": {
+        "fillEmail": "Completează email-ul.",
+        "processingFailed": "Nu am putut procesa cererea de resetare."
+      }
+    },
+    "resetPassword": {
+      "title": "Resetează parola",
+      "subtitle": "Introdu noua parolă.",
+      "newPassword": "Parolă nouă",
+      "confirmPassword": "Confirmă parola",
+      "reset": "Resetează parola",
+      "resetting": "Se resetează...",
+      "success": "Parola a fost resetată cu succes.",
+      "errors": {
+        "missingToken": "Token lipsă. Încearcă din nou.",
+        "passwordsMismatch": "Parolele nu se potrivesc.",
+        "resetFailed": "Resetarea parolei a eșuat."
+      }
+    }
+  },
+  "organizer": {
+    "dashboard": {
+      "title": "Evenimentele mele",
+      "createEvent": "+ Crează eveniment",
+      "noEvents": "Nu există evenimente",
+      "createFirst": "Creează primul tău eveniment →",
+      "tableHeaders": {
+        "title": "Titlu",
+        "date": "Dată",
+        "status": "Status",
+        "actions": "Acțiuni"
+      },
+      "actions": {
+        "edit": "Editare",
+        "submit": "Trimite",
+        "resubmit": "Re-trimite",
+        "cancel": "Anulează",
+        "delete": "Șterge",
+        "details": "Detalii",
+        "participants": "Participanți",
+        "materials": "Materiale",
+        "stats": "Statistici"
+      },
+      "tabs": {
+        "all": "Toate",
+        "draft": "Ciorne",
+        "pending_approval": "În așteptare",
+        "published": "Publicate",
+        "cancelled": "Anulate",
+        "rejected": "Respinse"
+      },
+      "messages": {
+        "submitted": "Eveniment trimis pentru aprobare.",
+        "cancelled": "Eveniment anulat.",
+        "deleted": "Eveniment șters.",
+        "actionFailed": "Acțiunea a eșuat."
+      },
+      "reasonLabel": "Motiv",
+      "reasonFallback": "Sunt necesare actualizări înainte de aprobare.",
+      "confirmDelete": "Ștergi acest eveniment?",
+      "confirmCancel": "Anulezi acest eveniment?",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Următor"
+      }
+    },
+    "form": {
+      "createTitle": "Crează eveniment",
+      "editTitle": "Editează eveniment",
+      "title": "Titlu",
+      "description": "Descriere",
+      "location": "Locație",
+      "onlineLink": "Link online",
+      "participationMode": "Mod de participare",
+      "category": "Categorie",
+      "faculty": "Facultate",
+      "department": "Departament",
+      "startDate": "Data început",
+      "endDate": "Data sfârşit",
+      "startDateTime": "Data & ora începerii",
+      "endDateTime": "Data & ora încheierii",
+      "maxParticipants": "Max participanți (opțional)",
+      "registrationLinkOptional": "Link înregistrare (opțional)",
+      "requiresRegistration": "Necesită înregistrare",
+      "isFree": "Gratuit",
+      "coverImage": "Imagine copertă",
+      "coverUrlOptional": "Sau URL imagine (optional)",
+      "noneOption": "— Niciuna —",
+      "save": "Salvează",
+      "saveEvent": "Salvează evenimentul",
+      "saving": "Se salvează...",
+      "cancel": "Anulează",
+      "submit": "Trimite pentru aprobare",
+      "successCreate": "Eveniment creat cu succes.",
+      "successUpdate": "Eveniment actualizat cu succes.",
+      "createdAsDraft": "Eveniment creat ca schiță.",
+      "createFailed": "Crearea evenimentului a eșuat.",
+      "updateFailed": "Actualizarea evenimentului a eșuat.",
+      "rejectedReasonLabel": "Motivul respingerii",
+      "endAfterStartError": "Data/ora de final trebuie să fie după data/ora de început.",
+      "modes": {
+        "physical": "În persoană",
+        "online": "Online",
+        "hybrid": "Hibrid"
+      },
+      "placeholders": {
+        "title": "Titlul evenimentului",
+        "description": "Descrie evenimentul...",
+        "location": "ex: Sala C210, Corp C",
+        "onlineLink": "https://meet.google.com/...",
+        "registrationLink": "https://...",
+        "maxParticipants": "Nelimitat",
+        "coverUrl": "https://..."
+      }
+    },
+    "coverUploader": {
+      "uploadFromDevice": "Încarcă din device",
+      "editCurrentImage": "Editează imaginea curentă",
+      "deleteSelectedImage": "Șterge imaginea selectată",
+      "helperText": "Încarcă o imagine, alege un singur crop, apoi salvează.",
+      "currentCover": "Coperta curentă",
+      "mainCropArea": "Zonă principală de crop",
+      "zoom": "Zoom",
+      "processing": "Se procesează...",
+      "saveCropUpload": "Salvează crop + upload",
+      "successUploaded": "Imaginea a fost procesată și comprimată pentru toate variantele.",
+      "errors": {
+        "noExistingImage": "Nu există o imagine curentă pentru editare.",
+        "openCurrentFailed": "Nu am putut deschide imaginea curentă pentru editare.",
+        "invalidType": "Folosește doar imagini JPG, PNG, WEBP sau GIF.",
+        "selectImage": "Selectează un fișier imagine valid.",
+        "adjustCrop": "Ajustează zona de crop înainte de upload.",
+        "uploadFailed": "Upload-ul imaginii a eșuat. Încearcă din nou."
+      }
+    }
+  },
+  "public": {
+    "eventsList": {
+      "title": "Evenimente",
+      "found": "evenimente găsite",
+      "gridView": "Vedere grilă",
+      "listView": "Vedere listă",
+      "loading": "Se încarcă...",
+      "loadError": "Nu am putut încărca evenimentele. Încearcă din nou.",
+      "noEvents": "Nu au fost găsite evenimente",
+      "adjustFilters": "Încearcă să ajustezi filtrele.",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "pageOf": "Pagina {{page}} din {{total}}"
+    },
+    "eventDetail": {
+      "aboutEvent": "Despre acest eveniment",
+      "location": "Locație",
+      "date": "Dată",
+      "time": "Oră",
+      "organizer": "Organizator",
+      "participants": "Participanți",
+      "materials": "Materiale",
+      "register": "Înregistrare",
+      "unregister": "Anulare înregistrare",
+      "qrCode": "Cod QR eveniment",
+      "addToCalendar": "Adaugă la calendar",
+      "eventNotFound": "Eveniment nu a fost găsit.",
+      "feedback": "Feedback",
+      "modes": {
+        "physical": "În persoană",
+        "online": "Online",
+        "hybrid": "Hibrid"
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "noEventsDay": "Nu sunt evenimente în această zi"
+    }
+  },
+  "events": {
+    "filters": {
+      "search": "Caută",
+      "category": "Categorie",
+      "faculty": "Facultate",
+      "mode": "Mod",
+      "isFree": "Gratuit",
+      "clearAll": "Șterge tot",
+      "advancedFilters": "Filtre avansate (OR)"
+    },
+    "statusBadge": {
+      "draft": "Ciornă",
+      "pending_approval": "În așteptare",
+      "published": "Publicat",
+      "rejected": "Respins",
+      "cancelled": "Anulat",
+      "unknown": "Necunoscut"
+    },
+    "eventCard": {
+      "participants": "participanti",
+      "free": "Gratuit"
+    },
+    "feedback": {
+      "title": "Lasă feedback",
+      "rating": "Rating (1-5)",
+      "comment": "Comentariu",
+      "submit": "Trimite feedback",
+      "success": "Mulțumim pentru feedback!",
+      "error": "Nu am putut trimite feedback-ul."
+    }
+  },
+  "account": {
+    "title": "Administrare cont",
+    "subtitle": "Profilul tău, participările și statisticile lunare.",
+    "noAccess": "Pagina de cont este disponibilă doar pentru student, organizator sau admin.",
+    "loading": "Se încarcă datele contului...",
+    "loadError": "Nu am putut încărca datele contului.",
+    "profile": {
+      "title": "Date profil",
+      "fullName": "Nume complet",
+      "email": "Email",
+      "faculty": "Facultate",
+      "department": "Departament",
+      "selectFaculty": "Selectează facultatea",
+      "selectDepartment": "Selectează departamentul",
+      "save": "Salvează modificările",
+      "saving": "Se salvează...",
+      "saveSuccess": "Profilul a fost actualizat.",
+      "saveError": "Actualizarea profilului a eșuat."
+    },
+    "generalInfo": {
+      "title": "Informații generale",
+      "memberSince": "Membru din",
+      "role": "Rol",
+      "faculty": "Facultate",
+      "department": "Departament"
+    },
+    "monthlyStats": {
+      "title": "Statistici lunare",
+      "month": "Lună",
+      "totalRegistrations": "Total înscrieri",
+      "attended": "Evenimente la care ai participat",
+      "waitlisted": "Evenimente în așteptare"
+    },
+    "events": {
+      "title": "Evenimentele din luna selectată",
+      "empty": "Nu ai înregistrări pentru luna selectată.",
+      "headers": {
+        "event": "Eveniment",
+        "date": "Dată",
+        "status": "Status înscriere",
+        "checkIn": "Prezență"
+      },
+      "checkedInYes": "Da",
+      "checkedInNo": "Nu",
+      "status": {
+        "registered": "Înscris",
+        "waitlist": "Listă de așteptare"
+      }
+    },
+    "organizer": {
+      "title": "Secțiune organizator",
+      "total": "Evenimente totale",
+      "published": "Evenimente publicate",
+      "pending": "Evenimente în așteptare",
+      "drafts": "Ciorne"
+    },
+    "admin": {
+      "title": "Secțiune administrator",
+      "totalUsers": "Utilizatori total",
+      "pendingEvents": "Evenimente în așteptare",
+      "totalEvents": "Evenimente total"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Panou Administrator",
+      "users": "Gestionare Utilizatori",
+      "usersDesc": "Adaugă, activează sau dezactivează utilizatori.",
+      "pending": "Evenimente în Așteptare",
+      "pendingDesc": "Aprobă sau respinge evenimentele trimise de organizatori.",
+      "reports": "Rapoarte",
+      "reportsDesc": "Vizualizează statistici și rapoarte despre platformă."
+    },
+    "users": {
+      "title": "Gestionare Utilizatori",
+      "newUser": "+ Utilizator nou",
+      "dashboardLink": "Dashboard admin",
+      "pendingLink": "Evenimente în așteptare",
+      "reportsLink": "Rapoarte",
+      "searchPlaceholder": "Caută utilizator...",
+      "loading": "Se încarcă...",
+      "refresh": "Reîmprospătează",
+      "refreshing": "Se reîmprospătează...",
+      "createForm": "Creare utilizator",
+      "namePlaceholder": "Nume complet",
+      "usernamePlaceholder": "Username",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Parolă",
+      "save": "Salvează",
+      "cancel": "Anulează",
+      "readOnly": "Doar vizualizare",
+      "accountType": {
+        "googleStudent": "student (google)"
+      },
+      "roles": {
+        "visitor": "vizitator",
+        "student": "student",
+        "organizer": "organizator",
+        "admin": "admin"
+      },
+      "filters": {
+        "source": {
+          "staff": "Doar staff",
+          "students": "Doar studenți Google",
+          "all": "Toate conturile"
+        },
+        "role": {
+          "all": "Toate rolurile",
+          "student": "Doar studenți",
+          "visitor": "Doar vizitatori",
+          "organizer": "Doar organizatori",
+          "admin": "Doar admini"
+        }
+      },
+      "tableHeaders": {
+        "name": "Nume",
+        "email": "Email",
+        "role": "Rol",
+        "status": "Status",
+        "actions": "Acțiuni"
+      },
+      "status": {
+        "active": "Activ",
+        "inactive": "Inactiv"
+      },
+      "actions": {
+        "activate": "Activează",
+        "deactivate": "Dezactivează",
+        "delete": "Șterge"
+      },
+      "messages": {
+        "noResults": "Niciun utilizator găsit.",
+        "createSuccess": "Utilizatorul a fost creat cu succes (rol implicit: visitor).",
+        "createError": "Crearea utilizatorului a eșuat. Verifică datele introduse.",
+        "allFieldsRequired": "Completează toate câmpurile pentru creare utilizator.",
+        "deleteSuccess": "Utilizatorul a fost șters.",
+        "deleteError": "Ștergerea utilizatorului a eșuat.",
+        "mustDeactivateFirst": "Utilizatorul trebuie dezactivat înainte de ștergere.",
+        "confirmDelete": "Ștergi definitiv utilizatorul"
+      }
+    },
+    "pending": {
+      "title": "Evenimente în Așteptare",
+      "loading": "Se încarcă...",
+      "noEvents": "Nu există evenimente în așteptare.",
+      "searchPlaceholder": "Caută eveniment...",
+      "allStatuses": "Toate statusurile",
+      "pending": "In asteptare",
+      "readOnly": "Doar vizualizare",
+      "tableHeaders": {
+        "title": "TITLU",
+        "organizer": "ORGANIZATOR",
+        "timestamp": "TIMESTAMP",
+        "status": "STATUS",
+        "location": "LOCAȚIE",
+        "actions": "ACȚIUNI"
+      },
+      "rejectReason": "Motiv respingere (opțional)",
+      "rejectReasonPlaceholder": "Introduceti motivul respingerii...",
+      "approve": "Aprobă",
+      "reject": "Respinge",
+      "confirmReject": "Confirmă respingerea"
+    },
+    "reports": {
+      "title": "Rapoarte",
+      "allEvents": "Raport Complet - Toate Evenimentele",
+      "allStatuses": "Toate statusurile",
+      "approved": "Aprobat",
+      "pending": "In asteptare",
+      "rejected": "Respins",
+      "deleted": "Sters",
+      "cancelled": "Anulat",
+      "registrationsSuffix": "înregistrări",
+      "avgParticipants": "Medie participanți / eveniment",
+      "avgParticipantsSub": "calculat din toate evenimentele",
+      "monthsWithData": "Total luni cu date",
+      "monthsWithDataSub": "luni cu cel puțin un eveniment",
+      "activeOrganizers": "Organizatori activi",
+      "activeOrganizersSub": "cu cel puțin un eveniment",
+      "monthlyChart": "Evenimente pe lună",
+      "organizerChart": "evenimente pe organizator",
+      "noData": "Nu există date.",
+      "tableHeaders": {
+        "title": "TITLU",
+        "organizer": "ORGANIZATOR",
+        "date": "DATĂ",
+        "status": "STATUS",
+        "registrations": "ÎNREGISTRĂRI"
+      }
+    }
+  }
+}

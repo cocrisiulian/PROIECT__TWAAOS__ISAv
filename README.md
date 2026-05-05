@@ -59,7 +59,12 @@ Fisierul `.env` este creat cu valori implicite. Modifica-l daca este necesar:
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=events_db
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:5173/auth/callback
 ```
+
+Pentru autentificarea Google, completeaza variabilele `GOOGLE_CLIENT_ID` si `GOOGLE_CLIENT_SECRET` cu valorile din Google Cloud Console.
 
 ### 3. Build si pornire servicii
 
@@ -81,6 +86,26 @@ docker-compose up
 | Backend API      | http://localhost:8000        |
 | Swagger / Docs   | http://localhost:8000/api/v1/docs |
 | PostgreSQL       | localhost:5432               |
+
+### Initializare automata la startup (migrari + seed)
+
+Backend-ul ruleaza automat la startup:
+- migrarea `event_registrations.status`
+- seed idempotent pentru utilizatori demo, lookup-uri si evenimente demo
+
+Seed-ul este gandit sa adauge date doar daca nu exista deja. Daca datele exista, pasul este sarit fara duplicate.
+
+Conturile Google Student sunt salvate in baza locala la fiecare autentificare Google reusita (`/auth/google/callback`).
+Astfel, dupa `docker-compose up`, datele raman consistente intre restart-uri cat timp volumul PostgreSQL este pastrat.
+
+Poti controla comportamentul din `.env`:
+
+```env
+AUTO_MIGRATE_ON_STARTUP=true
+AUTO_SEED_ON_STARTUP=true
+```
+
+Pentru a dezactiva unul din pasi, seteaza valoarea pe `false`.
 
 ### 5. Oprire servicii
 

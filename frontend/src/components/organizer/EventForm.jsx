@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getFaculties, getDepartments, getCategories } from '../../api/events.js';
-
-const MODES = [
-  { value: 'physical', label: 'In Person' },
-  { value: 'online', label: 'Online' },
-  { value: 'hybrid', label: 'Hybrid' },
-];
+import CoverImageUploader from './CoverImageUploader.jsx';
+import { parseCoverImage } from '../../utils/coverImage.js';
+import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 export default function EventForm({ initial = {}, onSubmit, submitting }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
+  const [isCoverUploadMode, setIsCoverUploadMode] = useState(false);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -57,12 +59,27 @@ export default function EventForm({ initial = {}, onSubmit, submitting }) {
   const faculties = facultiesData?.items || facultiesData || [];
   const categories = categoriesData?.items || categoriesData || [];
 
+  const isManagedCoverValue = useMemo(() => {
+    const value = form.cover_image_url;
+    if (!value || typeof value !== 'string') {
+      return false;
+    }
+    const trimmed = value.trim();
+    return Boolean(trimmed) && (trimmed.startsWith('{') || trimmed.includes('/uploads/covers/'));
+  }, [form.cover_image_url]);
+
+  const modes = useMemo(() => ([
+    { value: 'physical', label: t('organizer.form.modes.physical') },
+    { value: 'online', label: t('organizer.form.modes.online') },
+    { value: 'hybrid', label: t('organizer.form.modes.hybrid') },
+  ]), [t]);
+
   const set = (key, value) => setForm(f => ({ ...f, [key]: value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (new Date(form.end_datetime) <= new Date(form.start_datetime)) {
-      alert('End date/time must be after start date/time.');
+      alert(t('organizer.form.endAfterStartError'));
       return;
     }
     const payload = {
@@ -82,7 +99,7 @@ export default function EventForm({ initial = {}, onSubmit, submitting }) {
         type={type}
         value={form[key] ?? ''}
         onChange={(e) => set(key, e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 ${type === 'datetime-local' ? 'event-datetime-input' : ''}`}
         {...props}
       />
     </div>
@@ -90,32 +107,32 @@ export default function EventForm({ initial = {}, onSubmit, submitting }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {field('Title *', 'title', 'text', { required: true, placeholder: 'Event title' })}
+      {field(`${t('organizer.form.title')} *`, 'title', 'text', { required: true, placeholder: t('organizer.form.placeholders.title') })}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t('organizer.form.description')} *</label>
         <textarea
           value={form.description}
           onChange={(e) => set('description', e.target.value)}
           rows={5}
           required
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="Describe the event..."
+          placeholder={t('organizer.form.placeholders.description')}
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {field('Start Date & Time *', 'start_datetime', 'datetime-local', { required: true })}
-        {field('End Date & Time *', 'end_datetime', 'datetime-local', { required: true })}
+        {field(`${t('organizer.form.startDateTime')} *`, 'start_datetime', 'datetime-local', { required: true })}
+        {field(`${t('organizer.form.endDateTime')} *`, 'end_datetime', 'datetime-local', { required: true })}
       </div>
 
-      {field('Location', 'location', 'text', { placeholder: 'e.g. Room C210, Building C' })}
-      {field('Online Link', 'online_link', 'url', { placeholder: 'https://meet.google.com/...' })}
+      {field(t('organizer.form.location'), 'location', 'text', { placeholder: t('organizer.form.placeholders.location') })}
+      {field(t('organizer.form.onlineLink'), 'online_link', 'url', { placeholder: t('organizer.form.placeholders.onlineLink') })}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Participation Mode *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('organizer.form.participationMode')} *</label>
         <div className="flex gap-4">
-          {MODES.map(m => (
+          {modes.map(m => (
             <label key={m.value} className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="radio"
@@ -133,55 +150,75 @@ export default function EventForm({ initial = {}, onSubmit, submitting }) {
       <div className="flex gap-6">
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={form.is_free} onChange={(e) => set('is_free', e.target.checked)} />
-          Free entry
+          {t('organizer.form.isFree')}
         </label>
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={form.requires_registration} onChange={(e) => set('requires_registration', e.target.checked)} />
-          Requires registration
+          {t('organizer.form.requiresRegistration')}
         </label>
       </div>
 
       {form.requires_registration && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 border-l-2 border-blue-200">
-          {field('Registration Link (optional)', 'registration_link', 'url')}
-          {field('Max Participants (optional)', 'max_participants', 'number', { min: 1, placeholder: 'Unlimited' })}
+          {field(t('organizer.form.registrationLinkOptional'), 'registration_link', 'url', { placeholder: t('organizer.form.placeholders.registrationLink') })}
+          {field(t('organizer.form.maxParticipants'), 'max_participants', 'number', { min: 1, placeholder: t('organizer.form.placeholders.maxParticipants') })}
         </div>
       )}
 
-      {field('Cover Image URL', 'cover_image_url', 'url', { placeholder: 'https://...' })}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">{t('organizer.form.coverImage')}</label>
+        <CoverImageUploader
+          value={form.cover_image_url}
+          onChange={(value) => set('cover_image_url', value)}
+          onUploadModeChange={setIsCoverUploadMode}
+          disabled={submitting}
+        />
+        <div className={isCoverUploadMode || isManagedCoverValue ? 'opacity-60' : ''}>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('organizer.form.coverUrlOptional')}</label>
+          <input
+            type="text"
+            value={isManagedCoverValue ? '' : (form.cover_image_url ?? '')}
+            onChange={(e) => set('cover_image_url', e.target.value)}
+            placeholder={t('organizer.form.placeholders.coverUrl')}
+            disabled={isCoverUploadMode || isManagedCoverValue}
+            readOnly={isCoverUploadMode || isManagedCoverValue}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:text-gray-500"
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Faculty</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('organizer.form.faculty')}</label>
           <select
             value={form.faculty_id}
             onChange={(e) => { set('faculty_id', e.target.value); set('department_id', ''); }}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            <option value="">— None —</option>
+            <option value="">{t('organizer.form.noneOption')}</option>
             {faculties.map(f => <option key={f.id} value={f.id}>{f.short_name || f.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('organizer.form.department')}</label>
           <select
             value={form.department_id}
             onChange={(e) => set('department_id', e.target.value)}
             disabled={!form.faculty_id}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
           >
-            <option value="">— None —</option>
+            <option value="">{t('organizer.form.noneOption')}</option>
             {(departments || []).map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('organizer.form.category')}</label>
           <select
             value={form.category_id}
             onChange={(e) => set('category_id', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            <option value="">— None —</option>
+            <option value="">{t('organizer.form.noneOption')}</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -193,14 +230,14 @@ export default function EventForm({ initial = {}, onSubmit, submitting }) {
           disabled={submitting}
           className="bg-blue-600 text-white text-sm font-medium px-6 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
         >
-          {submitting ? 'Saving…' : 'Save Event'}
+          {submitting ? t('organizer.form.saving') : t('organizer.form.saveEvent')}
         </button>
         <button
           type="button"
-          onClick={() => navigate('/organizer')}
+          onClick={() => navigate(localizedTo('/organizer'))}
           className="text-sm text-gray-600 px-5 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
         >
-          Cancel
+          {t('organizer.form.cancel')}
         </button>
       </div>
     </form>

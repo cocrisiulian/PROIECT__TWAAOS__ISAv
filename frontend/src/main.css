@@ -1,6 +1,6 @@
-/* Main CSS - Stiluri globale pentru aplicație */
+/* Main CSS - Styles */
 
-/* Reset și bază */
+/* Reset and base */
 * {
   box-sizing: border-box;
 }
@@ -20,7 +20,7 @@ body {
   color: #111827;
 }
 
-/* Scrollbar personalizat */
+/* Scrollbar custom */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -94,6 +94,21 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+}
+
+/* Adds a visible frame on the native calendar trigger for datetime inputs. */
+input.event-datetime-input::-webkit-calendar-picker-indicator {
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  padding: 2px;
+  background-color: #f8fafc;
+  cursor: pointer;
+}
+
+input.event-datetime-input:hover::-webkit-calendar-picker-indicator,
+input.event-datetime-input:focus::-webkit-calendar-picker-indicator {
+  border-color: #2563eb;
+  background-color: #eff6ff;
 }
 
 /* Utility classes */

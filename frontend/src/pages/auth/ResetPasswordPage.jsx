@@ -1,11 +1,16 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { confirmPasswordReset } from '../../api/auth.js';
+import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 function ResetPasswordPage() {
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const initialToken = useMemo(() => searchParams.get('token') || '', [searchParams]);
+
+  const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
 
   const [token, setToken] = useState(initialToken);
   const [newPassword, setNewPassword] = useState('');
@@ -17,12 +22,12 @@ function ResetPasswordPage() {
     event.preventDefault();
 
     if (!token || !newPassword || !confirmPassword) {
-      toast.error('Please complete all fields.');
+      toast.error(t('auth.resetPassword.errors.missingToken'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      toast.error(t('auth.resetPassword.errors.passwordsMismatch'));
       return;
     }
 
@@ -30,9 +35,9 @@ function ResetPasswordPage() {
     try {
       await confirmPasswordReset(token, newPassword);
       setIsDone(true);
-      toast.success('Password reset successfully. You can now log in.');
+      toast.success(t('auth.resetPassword.success'));
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Could not reset password.';
+      const msg = err.response?.data?.detail || t('auth.resetPassword.errors.resetFailed');
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -42,13 +47,13 @@ function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Set new password</h1>
-        <p className="text-sm text-gray-500 mb-6">Use the reset token to create a new password.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.resetPassword.title')}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t('auth.resetPassword.subtitle')}</p>
 
         {isDone ? (
           <div className="p-4 rounded-lg border border-green-200 bg-green-50 text-green-800 text-sm">
-            Password updated successfully. Continue to{' '}
-            <Link to="/login" className="font-medium underline">
+            {t('auth.resetPassword.success')}. {t('auth.resetPassword.title')} to{' '}
+            <Link to={localizedTo('/login')} className="font-medium underline">
               login
             </Link>
             .
@@ -67,7 +72,7 @@ function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.resetPassword.newPassword')}</label>
               <input
                 type="password"
                 value={newPassword}
@@ -79,7 +84,7 @@ function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm new password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.resetPassword.confirmPassword')}</label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -95,7 +100,7 @@ function ResetPasswordPage() {
               disabled={loading}
               className="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium px-6 py-3 rounded-lg transition disabled:opacity-50"
             >
-              {loading ? 'Updating password...' : 'Update password'}
+              {loading ? t('auth.resetPassword.resetting') : t('auth.resetPassword.reset')}
             </button>
           </form>
         )}

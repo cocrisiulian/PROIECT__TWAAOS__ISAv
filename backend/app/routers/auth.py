@@ -34,6 +34,14 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
+def ensure_google_oauth_configured() -> None:
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET or not settings.GOOGLE_REDIRECT_URI:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Google OAuth is not fully configured",
+        )
+
+
 def build_user_info_from_staff(user: User) -> UserInfo:
     return UserInfo(
         id=str(user.id),
@@ -163,8 +171,7 @@ def reset_password(body: PasswordResetConfirmRequest, db: Session = Depends(get_
 @router.get("/google/url")
 def google_auth_url():
     """Returns the Google OAuth2 authorization URL for the frontend to redirect to."""
-    if not settings.GOOGLE_CLIENT_ID:
-        raise HTTPException(status_code=501, detail="Google OAuth not configured")
+    ensure_google_oauth_configured()
 
     state = create_action_token(
         "google_oauth_state",
@@ -191,8 +198,7 @@ async def google_callback(body: GoogleCallbackRequest, db: Session = Depends(get
     if not payload:
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
 
-    if not settings.GOOGLE_CLIENT_ID:
-        raise HTTPException(status_code=501, detail="Google OAuth not configured")
+    ensure_google_oauth_configured()
 
     # Exchange code for token
     async with httpx.AsyncClient() as client:
@@ -208,6 +214,8 @@ async def google_callback(body: GoogleCallbackRequest, db: Session = Depends(get
 
     token_data = token_resp.json()
     access_token = token_data.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Missing access token in Google response")
 
     # Get user info
     async with httpx.AsyncClient() as client:

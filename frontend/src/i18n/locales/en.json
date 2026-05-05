@@ -1,0 +1,493 @@
+{
+  "nav": {
+    "brand": "USV Events",
+    "events": "Events",
+    "calendar": "Calendar",
+    "account": "My Account",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "users": "Users",
+    "login": "Login",
+    "logout": "Logout",
+    "authenticated": "Authenticated"
+  },
+  "hero": {
+    "title": "Discover your university events",
+    "subtitle": "Conferences, workshops, and student activities in one place.",
+    "ctaPrimary": "Browse events",
+    "ctaSecondary": "Contact us"
+  },
+  "contact": {
+    "title": "Contact form",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Email address",
+    "messagePlaceholder": "Write your message here",
+    "submit": "Send",
+    "errors": {
+      "requiredName": "Name is required.",
+      "requiredEmail": "Email is required.",
+      "invalidEmail": "Please enter a valid email address.",
+      "requiredMessage": "Message cannot be empty."
+    }
+  },
+  "common": {
+    "language": "Language",
+    "romanian": "Romanian",
+    "english": "English"
+  },
+  "auth": {
+    "login": {
+      "title": "USV Events",
+      "subtitle": "University Event Management System",
+      "studentSection": "Student Sign In",
+      "studentDesc": "Use your university Google account to sign in.",
+      "staffSection": "Staff Login",
+      "staffDesc": "For organizers and administrators.",
+      "username": "Username",
+      "password": "Password",
+      "signIn": "Sign In",
+      "signingIn": "Signing in...",
+      "createAccount": "Create account",
+      "forgotPassword": "Forgot password?",
+      "googleSignIn": "Sign in with Google",
+      "googleRedirecting": "Redirecting...",
+      "emailOnly": "@student.usv.ro only",
+      "errors": {
+        "fillFields": "Please enter username and password.",
+        "invalidCredentials": "Invalid credentials.",
+        "forbidden": "You do not have permission to sign in with this account.",
+        "roleVisitor": "Your account currently has visitor role. Ask an administrator to assign organizer or admin access.",
+        "loginFailed": "Sign in failed. Please try again."
+      }
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Sign up to access your USV Events account.",
+      "username": "Username",
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "signUp": "Sign Up",
+      "creatingAccount": "Creating account...",
+      "alreadyHaveAccount": "Already have an account? ",
+      "signInHere": "Sign in",
+      "passwordHint": "Minimum 8 characters",
+      "confirmPasswordHint": "Re-enter password",
+      "usernamePlaceholder": "username",
+      "fullNamePlaceholder": "Your full name",
+      "emailPlaceholder": "you@example.com",
+      "errors": {
+        "fillAllFields": "Please fill in all required fields.",
+        "passwordsMismatch": "Passwords do not match.",
+        "creationFailed": "Could not create account."
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your account email and we will generate a reset token.",
+      "email": "Email",
+      "requestReset": "Request reset",
+      "generatingToken": "Generating reset token...",
+      "backToLogin": "Back to",
+      "resetToken": "Reset token (dev/testing):",
+      "continueToReset": "Continue to reset form",
+      "successMessage": "If the account exists, reset instructions were generated.",
+      "errors": {
+        "fillEmail": "Please enter your email.",
+        "processingFailed": "Could not process reset request."
+      }
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your new password.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "reset": "Reset password",
+      "resetting": "Resetting...",
+      "success": "Password reset successfully.",
+      "errors": {
+        "missingToken": "Missing token. Please try again.",
+        "passwordsMismatch": "Passwords do not match.",
+        "resetFailed": "Password reset failed."
+      }
+    }
+  },
+  "organizer": {
+    "dashboard": {
+      "title": "My Events",
+      "createEvent": "+ Create Event",
+      "noEvents": "No events found",
+      "createFirst": "Create your first event →",
+      "tableHeaders": {
+        "title": "Title",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "edit": "Edit",
+        "submit": "Submit",
+        "resubmit": "Resubmit",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "details": "Details",
+        "participants": "Participants",
+        "materials": "Materials",
+        "stats": "Stats"
+      },
+      "tabs": {
+        "all": "All",
+        "draft": "Draft",
+        "pending_approval": "Pending",
+        "published": "Published",
+        "cancelled": "Cancelled",
+        "rejected": "Rejected"
+      },
+      "messages": {
+        "submitted": "Event submitted for approval.",
+        "cancelled": "Event cancelled.",
+        "deleted": "Event deleted.",
+        "actionFailed": "Action failed."
+      },
+      "reasonLabel": "Reason",
+      "reasonFallback": "Needs updates before approval.",
+      "confirmDelete": "Delete this event?",
+      "confirmCancel": "Cancel this event?",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "form": {
+      "createTitle": "Create event",
+      "editTitle": "Edit event",
+      "title": "Title",
+      "description": "Description",
+      "location": "Location",
+      "onlineLink": "Online link",
+      "participationMode": "Participation mode",
+      "category": "Category",
+      "faculty": "Faculty",
+      "department": "Department",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "startDateTime": "Start date & time",
+      "endDateTime": "End date & time",
+      "maxParticipants": "Max participants (optional)",
+      "registrationLinkOptional": "Registration link (optional)",
+      "requiresRegistration": "Requires registration",
+      "isFree": "Free",
+      "coverImage": "Cover image",
+      "coverUrlOptional": "Or image URL (optional)",
+      "noneOption": "— None —",
+      "save": "Save",
+      "saveEvent": "Save event",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "submit": "Submit for approval",
+      "successCreate": "Event created successfully.",
+      "successUpdate": "Event updated successfully.",
+      "createdAsDraft": "Event created as draft.",
+      "createFailed": "Failed to create event.",
+      "updateFailed": "Failed to update event.",
+      "rejectedReasonLabel": "Rejected reason",
+      "endAfterStartError": "End date/time must be after start date/time.",
+      "modes": {
+        "physical": "In Person",
+        "online": "Online",
+        "hybrid": "Hybrid"
+      },
+      "placeholders": {
+        "title": "Event title",
+        "description": "Describe the event...",
+        "location": "e.g. Room C210, Building C",
+        "onlineLink": "https://meet.google.com/...",
+        "registrationLink": "https://...",
+        "maxParticipants": "Unlimited",
+        "coverUrl": "https://..."
+      }
+    },
+    "coverUploader": {
+      "uploadFromDevice": "Upload from device",
+      "editCurrentImage": "Edit current image",
+      "deleteSelectedImage": "Delete selected image",
+      "helperText": "Upload one image, choose one crop, then save.",
+      "currentCover": "Current cover",
+      "mainCropArea": "Main crop area",
+      "zoom": "Zoom",
+      "processing": "Processing...",
+      "saveCropUpload": "Save crop + upload",
+      "successUploaded": "Image has been processed and compressed for all variants.",
+      "errors": {
+        "noExistingImage": "No existing image available to edit.",
+        "openCurrentFailed": "Could not open current image for editing.",
+        "invalidType": "Use JPG, PNG, WEBP, or GIF images only.",
+        "selectImage": "Select a valid image file.",
+        "adjustCrop": "Adjust the crop area before upload.",
+        "uploadFailed": "Image upload failed. Please try again."
+      }
+    }
+  },
+  "public": {
+    "eventsList": {
+      "title": "Events",
+      "found": "events found",
+      "gridView": "Grid view",
+      "listView": "List view",
+      "loading": "Loading...",
+      "loadError": "Failed to load events. Please try again.",
+      "noEvents": "No events found",
+      "adjustFilters": "Try adjusting your filters.",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {{page}} of {{total}}"
+    },
+    "eventDetail": {
+      "aboutEvent": "About this Event",
+      "location": "Location",
+      "date": "Date",
+      "time": "Time",
+      "organizer": "Organizer",
+      "participants": "Participants",
+      "materials": "Materials",
+      "register": "Register",
+      "unregister": "Unregister",
+      "qrCode": "Event QR Code",
+      "addToCalendar": "Add to calendar",
+      "eventNotFound": "Event not found.",
+      "feedback": "Feedback",
+      "modes": {
+        "physical": "In Person",
+        "online": "Online",
+        "hybrid": "Hybrid"
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "noEventsDay": "No events on this day"
+    }
+  },
+  "events": {
+    "filters": {
+      "search": "Search",
+      "category": "Category",
+      "faculty": "Faculty",
+      "mode": "Mode",
+      "isFree": "Free",
+      "clearAll": "Clear all",
+      "advancedFilters": "Advanced filters (OR)"
+    },
+    "statusBadge": {
+      "draft": "Draft",
+      "pending_approval": "Pending approval",
+      "published": "Published",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown"
+    },
+    "eventCard": {
+      "participants": "participants",
+      "free": "Free"
+    },
+    "feedback": {
+      "title": "Leave feedback",
+      "rating": "Rating (1-5)",
+      "comment": "Comment",
+      "submit": "Submit feedback",
+      "success": "Thank you for your feedback!",
+      "error": "Could not submit feedback."
+    }
+  },
+  "account": {
+    "title": "Account Management",
+    "subtitle": "Your profile, participations, and monthly statistics.",
+    "noAccess": "Account page is available only for student, organizer, or admin roles.",
+    "loading": "Loading account data...",
+    "loadError": "Could not load account data.",
+    "profile": {
+      "title": "Profile details",
+      "fullName": "Full name",
+      "email": "Email",
+      "faculty": "Faculty",
+      "department": "Department",
+      "selectFaculty": "Select faculty",
+      "selectDepartment": "Select department",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saveSuccess": "Profile updated successfully.",
+      "saveError": "Profile update failed."
+    },
+    "generalInfo": {
+      "title": "General information",
+      "memberSince": "Member since",
+      "role": "Role",
+      "faculty": "Faculty",
+      "department": "Department"
+    },
+    "monthlyStats": {
+      "title": "Monthly statistics",
+      "month": "Month",
+      "totalRegistrations": "Total registrations",
+      "attended": "Attended events",
+      "waitlisted": "Waitlisted events"
+    },
+    "events": {
+      "title": "Events in selected month",
+      "empty": "No registrations for the selected month.",
+      "headers": {
+        "event": "Event",
+        "date": "Date",
+        "status": "Registration status",
+        "checkIn": "Check-in"
+      },
+      "checkedInYes": "Yes",
+      "checkedInNo": "No",
+      "status": {
+        "registered": "Registered",
+        "waitlist": "Waitlist"
+      }
+    },
+    "organizer": {
+      "title": "Organizer section",
+      "total": "Total events",
+      "published": "Published events",
+      "pending": "Pending events",
+      "drafts": "Drafts"
+    },
+    "admin": {
+      "title": "Admin section",
+      "totalUsers": "Total users",
+      "pendingEvents": "Pending events",
+      "totalEvents": "Total events"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Panel",
+      "users": "User Management",
+      "usersDesc": "Add, activate, or deactivate users.",
+      "pending": "Pending Events",
+      "pendingDesc": "Approve or reject events submitted by organizers.",
+      "reports": "Reports",
+      "reportsDesc": "View statistics and reports about the platform."
+    },
+    "users": {
+      "title": "User Management",
+      "newUser": "+ New User",
+      "dashboardLink": "Admin dashboard",
+      "pendingLink": "Pending events",
+      "reportsLink": "Reports",
+      "searchPlaceholder": "Search user...",
+      "loading": "Loading...",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "createForm": "Create user",
+      "namePlaceholder": "Full name",
+      "usernamePlaceholder": "Username",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "save": "Save",
+      "cancel": "Cancel",
+      "readOnly": "View only",
+      "accountType": {
+        "googleStudent": "student (google)"
+      },
+      "roles": {
+        "visitor": "visitor",
+        "student": "student",
+        "organizer": "organizer",
+        "admin": "admin"
+      },
+      "filters": {
+        "source": {
+          "staff": "Staff only",
+          "students": "Google students only",
+          "all": "All accounts"
+        },
+        "role": {
+          "all": "All roles",
+          "student": "Students only",
+          "visitor": "Visitors only",
+          "organizer": "Organizers only",
+          "admin": "Admins only"
+        }
+      },
+      "tableHeaders": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "delete": "Delete"
+      },
+      "messages": {
+        "noResults": "No users found.",
+        "createSuccess": "User created successfully (default role: visitor).",
+        "createError": "User creation failed. Check the data you entered.",
+        "allFieldsRequired": "Fill in all fields to create a user.",
+        "deleteSuccess": "User deleted.",
+        "deleteError": "User deletion failed.",
+        "mustDeactivateFirst": "User must be deactivated before deletion.",
+        "confirmDelete": "Permanently delete user"
+      }
+    },
+    "pending": {
+      "title": "Pending Events",
+      "loading": "Loading...",
+      "noEvents": "No pending events.",
+      "searchPlaceholder": "Search event...",
+      "allStatuses": "All statuses",
+      "pending": "Pending",
+      "readOnly": "View only",
+      "tableHeaders": {
+        "title": "TITLE",
+        "organizer": "ORGANIZER",
+        "timestamp": "TIMESTAMP",
+        "status": "STATUS",
+        "location": "LOCATION",
+        "actions": "ACTIONS"
+      },
+      "rejectReason": "Rejection reason (optional)",
+      "rejectReasonPlaceholder": "Enter the reason for rejection...",
+      "approve": "Approve",
+      "reject": "Reject",
+      "confirmReject": "Confirm rejection"
+    },
+    "reports": {
+      "title": "Reports",
+      "allEvents": "Complete Report - All Events",
+      "allStatuses": "All statuses",
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected",
+      "deleted": "Deleted",
+      "cancelled": "Cancelled",
+      "registrationsSuffix": "registrations",
+      "avgParticipants": "Average participants / event",
+      "avgParticipantsSub": "calculated from all events",
+      "monthsWithData": "Total months with data",
+      "monthsWithDataSub": "months with at least one event",
+      "activeOrganizers": "Active organizers",
+      "activeOrganizersSub": "with at least one event",
+      "monthlyChart": "Events per month",
+      "organizerChart": "Events per organizer",
+      "noData": "No data available.",
+      "tableHeaders": {
+        "title": "TITLE",
+        "organizer": "ORGANIZER",
+        "date": "DATE",
+        "status": "STATUS",
+        "registrations": "REGISTRATIONS"
+      }
+    }
+  }
+}

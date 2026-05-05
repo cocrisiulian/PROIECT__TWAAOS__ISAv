@@ -1,14 +1,19 @@
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 export default function DayEventsModal({ date, events, isOpen, onClose }) {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
 
   if (!isOpen) return null;
 
-  // Sortează evenimentele după ora de început
-  const sortedEvents = [...events].sort((a, b) => {
+  // Sort events by start time
+  const safeEvents = Array.isArray(events) ? events : [];
+  const sortedEvents = [...safeEvents].sort((a, b) => {
     const timeA = new Date(a.start_datetime).getTime();
     const timeB = new Date(b.start_datetime).getTime();
     return timeA - timeB;
@@ -16,7 +21,7 @@ export default function DayEventsModal({ date, events, isOpen, onClose }) {
 
   const handleEventClick = (eventId) => {
     onClose();
-    navigate(`/events/${eventId}`);
+    navigate(localizedTo(`/events/${eventId}`));
   };
 
   return (
@@ -35,7 +40,7 @@ export default function DayEventsModal({ date, events, isOpen, onClose }) {
                 })}
               </h2>
               <p className="text-blue-100 text-sm mt-1">
-                {sortedEvents.length} {sortedEvents.length === 1 ? 'eveniment' : 'evenimente'}
+                {sortedEvents.length} {sortedEvents.length === 1 ? (i18n.language === 'ro' ? 'eveniment' : 'event') : (i18n.language === 'ro' ? 'evenimente' : 'events')}
               </p>
             </div>
             <button
@@ -52,7 +57,7 @@ export default function DayEventsModal({ date, events, isOpen, onClose }) {
         {/* Events List */}
         <div className="p-6">
           {sortedEvents.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Nu sunt evenimente în această zi</p>
+            <p className="text-gray-500 text-center py-8">{t('public.calendar.noEventsDay')}</p>
           ) : (
             <div className="space-y-3">
               {sortedEvents.map((event, index) => {

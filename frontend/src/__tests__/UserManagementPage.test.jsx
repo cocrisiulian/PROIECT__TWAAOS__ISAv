@@ -6,12 +6,14 @@ import UserManagementPage from '../pages/admin/UserManagementPage.jsx';
 
 const mockGetUsers = vi.fn(() => Promise.resolve({ data: { items: [], total: 0 } }));
 const mockCreateUser = vi.fn(() => Promise.resolve({ data: { id: 'new-user' } }));
+const mockDeleteUser = vi.fn(() => Promise.resolve({ data: {} }));
 
 vi.mock('../api/admin', () => ({
   getUsers: (...args) => mockGetUsers(...args),
   createUser: (...args) => mockCreateUser(...args),
   activateUser: vi.fn(),
   deactivateUser: vi.fn(),
+  deleteUser: (...args) => mockDeleteUser(...args),
   assignUserRole: vi.fn(),
 }));
 
@@ -33,16 +35,17 @@ describe('UserManagementPage', () => {
   beforeEach(() => {
     mockGetUsers.mockClear();
     mockCreateUser.mockClear();
+    mockDeleteUser.mockClear();
   });
 
   it('validates required fields before create', async () => {
     renderPage();
 
-    fireEvent.click(screen.getByRole('button', { name: /utilizator nou/i }));
-    fireEvent.click(screen.getByRole('button', { name: /salvează/i }));
+    fireEvent.click(screen.getByRole('button', { name: /new user/i }));
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/completează toate câmpurile/i)).toBeTruthy();
+      expect(screen.getByText(/fill in all fields to create a user/i)).toBeTruthy();
     });
 
     expect(mockCreateUser).not.toHaveBeenCalled();
@@ -51,14 +54,14 @@ describe('UserManagementPage', () => {
   it('creates user and trims fields', async () => {
     renderPage();
 
-    fireEvent.click(screen.getByRole('button', { name: /utilizator nou/i }));
+    fireEvent.click(screen.getByRole('button', { name: /new user/i }));
 
-    fireEvent.change(screen.getByPlaceholderText('Nume complet'), { target: { value: '  User Test  ' } });
+    fireEvent.change(screen.getByPlaceholderText('Full name'), { target: { value: '  User Test  ' } });
     fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: '  user_test  ' } });
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: '  user@test.ro  ' } });
-    fireEvent.change(screen.getByPlaceholderText('Parolă'), { target: { value: 'secret123' } });
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'secret123' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /salvează/i }));
+    fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
       expect(mockCreateUser).toHaveBeenCalledTimes(1);
@@ -72,7 +75,34 @@ describe('UserManagementPage', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/a fost creat cu succes/i)).toBeTruthy();
+      expect(screen.getByText(/user created successfully/i)).toBeTruthy();
     });
+  });
+
+  it('keeps delete disabled for active users', async () => {
+    mockGetUsers.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            id: 'user-1',
+            full_name: 'Active User',
+            email: 'active@usv.ro',
+            role: 'student',
+            is_active: true,
+            account_type: 'local',
+          },
+        ],
+        total: 1,
+      },
+    });
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Active User')).toBeTruthy();
+    });
+
+    expect(screen.getByRole('button', { name: /delete/i })).toBeDisabled();
+    expect(mockDeleteUser).not.toHaveBeenCalled();
   });
 });

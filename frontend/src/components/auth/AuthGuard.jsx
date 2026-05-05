@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore.js';
+import { useAuthStore, isTokenExpired, getRoleFromToken } from '../../store/authStore.js';
 
 function getRoleFromStorage() {
   try {
@@ -25,29 +25,23 @@ function getRoleFromStorage() {
   return null;
 }
 
-function getRoleFromToken(token) {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(window.atob(base64));
-    return payload?.role || null;
-  } catch {
-    return null;
-  }
-}
-
 function AuthGuard({ allowedRoles }) {
   // Read from Zustand store (in-memory)
-  const { token: storeToken, role: storeRole } = useAuthStore();
+  const { token: storeToken, role: storeRole, clearAuth } = useAuthStore();
 
   // Fallback to localStorage in case Zustand hasn't rehydrated yet
   const token = storeToken || localStorage.getItem('auth_token');
   const role = storeRole || getRoleFromStorage() || (token ? getRoleFromToken(token) : null);
 
+  // Verifică dacă token-ul lipsește
   if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Verifică dacă token-ul este expirat
+  if (isTokenExpired(token)) {
+    // Curăță starea și localStorage-ul
+    clearAuth();
     return <Navigate to="/login" replace />;
   }
 

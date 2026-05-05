@@ -1,20 +1,24 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { getEvent, registerForEvent, unregisterFromEvent } from '../../api/events.js';
 import { useAuthStore } from '../../store/authStore.js';
 import Navbar from '../../components/layout/Navbar.jsx';
 import FeedbackForm from '../../components/events/FeedbackForm.jsx';
+import { getCoverImageUrl } from '../../utils/coverImage.js';
+import { toPublicAssetUrl } from '../../utils/assetUrl.js';
+import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 const MODE_LABELS = { physical: 'In Person', online: 'Online', hybrid: 'Hybrid' };
 
-function QRModal({ eventId, onClose }) {
+function QRModal({ eventId, onClose, t }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl p-6 max-w-xs w-full text-center" onClick={e => e.stopPropagation()}>
-        <h3 className="font-semibold text-lg mb-4">Event QR Code</h3>
+        <h3 className="font-semibold text-lg mb-4">{t('public.eventDetail.qrCode')}</h3>
         <img src={`/api/v1/events/${eventId}/qr.png`} alt="QR Code" className="mx-auto w-48 h-48" />
         <p className="text-xs text-gray-500 mt-3">Scan to open this event page</p>
         <button onClick={onClose} className="mt-4 text-sm text-blue-600 hover:underline">Close</button>
@@ -24,10 +28,13 @@ function QRModal({ eventId, onClose }) {
 }
 
 export default function EventDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const { token, role } = useAuthStore();
   const [showQR, setShowQR] = useState(false);
   const queryClient = useQueryClient();
+
+  const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
 
   const { data: event, isLoading, isError } = useQuery({
     queryKey: ['event', id],
@@ -35,16 +42,17 @@ export default function EventDetailPage() {
   });
 
   const registerMutation = useMutation({
+    mutationKey: ['event', id],
     mutationFn: () => registerForEvent(id),
     onSuccess: (res) => {
       toast.success(res?.data?.detail || 'Registration updated');
-      queryClient.invalidateQueries({ queryKey: ['event', id] });
     },
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to register'),
   });
   const unregisterMutation = useMutation({
+    mutationKey: ['event', id],
     mutationFn: () => unregisterFromEvent(id),
-    onSuccess: () => { toast.success('Unregistered'); queryClient.invalidateQueries({ queryKey: ['event', id] }); },
+    onSuccess: () => { toast.success('Unregistered'); },
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to unregister'),
   });
 
@@ -63,6 +71,7 @@ export default function EventDetailPage() {
 
   const isPast = new Date(event.end_datetime) < new Date();
   const canFeedback = role === 'student' && isPast;
+  const backgroundCover = getCoverImageUrl(event.cover_image_url, 'background');
 
   // Google Calendar URL
   const gcalUrl = (() => {
@@ -80,12 +89,24 @@ export default function EventDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      {showQR && <QRModal eventId={id} onClose={() => setShowQR(false)} />}
+      {showQR && <QRModal eventId={id} onClose={() => setShowQR(false)} t={t} />}
 
       {/* Cover */}
-      <div className="h-56 sm:h-72 bg-gradient-to-br from-blue-600 to-indigo-700 relative overflow-hidden">
-        {event.cover_image_url && (
-          <img src={event.cover_image_url} alt={event.title} className="w-full h-full object-cover" />
+      <div className="h-56 sm:h-72 bg-gradient-to-br from-blue-300 to-indigo-400 relative overflow-hidden">
+        {backgroundCover && (
+          <>
+            <img
+              src={backgroundCover}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-sm scale-105 opacity-50"
+            />
+            <img
+              src={backgroundCover}
+              alt={event.title}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+          </>
         )}
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute bottom-0 left-0 right-0 p-6 max-w-5xl mx-auto">
@@ -98,18 +119,18 @@ export default function EventDetailPage() {
           {/* Left - Description + Materials */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-lg font-semibold mb-3">About this Event</h2>
+              <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.aboutEvent')}</h2>
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{event.description}</p>
             </div>
 
             {event.materials && event.materials.length > 0 && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-semibold mb-3">Materials</h2>
+                <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.materials')}</h2>
                 <ul className="space-y-2">
                   {event.materials.map((m) => (
                     <li key={m.id}>
                       <a
-                        href={`/uploads/${m.file_url}`}
+                        href={toPublicAssetUrl(m.file_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-blue-600 hover:underline text-sm"
@@ -127,7 +148,7 @@ export default function EventDetailPage() {
 
             {canFeedback && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-semibold mb-3">Leave Feedback</h2>
+                <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.feedback')}</h2>
                 <FeedbackForm eventId={id} />
               </div>
             )}
@@ -137,7 +158,7 @@ export default function EventDetailPage() {
           <div className="space-y-4">
             <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Date & Time</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{t('public.eventDetail.date')}</p>
                 <p className="text-sm font-medium mt-0.5">
                   {format(new Date(event.start_datetime), 'EEE, MMM d, yyyy')}
                 </p>
@@ -147,7 +168,7 @@ export default function EventDetailPage() {
               </div>
               {event.location && (
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Location</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{t('public.eventDetail.location')}</p>
                   <p className="text-sm mt-0.5">{event.location}</p>
                 </div>
               )}
@@ -158,12 +179,12 @@ export default function EventDetailPage() {
                 </div>
               )}
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Mode</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{t('public.eventDetail.time')}</p>
                 <p className="text-sm mt-0.5">{MODE_LABELS[event.participation_mode] || event.participation_mode}</p>
               </div>
               {event.organizer_name && (
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Organizer</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{t('public.eventDetail.organizer')}</p>
                   <p className="text-sm mt-0.5">{event.organizer_name}</p>
                 </div>
               )}
@@ -204,13 +225,13 @@ export default function EventDetailPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition w-full"
               >
-                📆 Add to Google Calendar
+                📆 {t('public.eventDetail.addToCalendar')}
               </a>
               <button
                 onClick={() => setShowQR(true)}
                 className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition w-full"
               >
-                📱 Show QR Code
+                📱 {t('public.eventDetail.qrCode')}
               </button>
               {event.registration_link && (
                 <a
@@ -219,7 +240,7 @@ export default function EventDetailPage() {
                   rel="noopener noreferrer"
                   className="block text-center bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition"
                 >
-                  Register
+                  {t('public.eventDetail.register')}
                 </a>
               )}
               {role === 'student' && event.requires_registration && !event.registration_link && !isPast && (
@@ -229,7 +250,7 @@ export default function EventDetailPage() {
                     disabled={unregisterMutation.isPending}
                     className="w-full text-sm text-red-600 border border-red-200 hover:bg-red-50 py-2 px-4 rounded-lg transition"
                   >
-                    Unregister
+                    {t('public.eventDetail.unregister')}
                   </button>
                 ) : event.is_waitlisted ? (
                   <button
@@ -245,7 +266,7 @@ export default function EventDetailPage() {
                     disabled={registerMutation.isPending}
                     className="w-full text-sm bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
                   >
-                    Register
+                    {t('public.eventDetail.register')}
                   </button>
                 )
               )}

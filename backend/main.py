@@ -6,11 +6,14 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import Base, engine
 from app.routers import health
-from app.routers import auth, public, export, organizer, admin
+from app.routers import auth, public, export, organizer, admin, account
+from app.migrate_student_profile_fields import migrate as migrate_student_profile_fields
+from app.seed import seed
 
 # Import all models so Base knows about them for create_all
 import app.models  # noqa: F401
 
+migrate_student_profile_fields()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -18,6 +21,12 @@ app = FastAPI(
     openapi_url=f"{settings.API_PREFIX}/openapi.json",
     docs_url=f"{settings.API_PREFIX}/docs",
 )
+
+
+@app.on_event("startup")
+def startup_seed():
+    """Seed the database with initial data on startup"""
+    seed()
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,3 +47,4 @@ app.include_router(public.router, prefix=settings.API_PREFIX)
 app.include_router(export.router, prefix=settings.API_PREFIX)
 app.include_router(organizer.router, prefix=settings.API_PREFIX)
 app.include_router(admin.router, prefix=settings.API_PREFIX)
+app.include_router(account.router, prefix=settings.API_PREFIX)

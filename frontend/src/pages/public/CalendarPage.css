@@ -67,11 +67,34 @@
 
 /* Week view styling */
 .fc-timegrid-slot {
-  height: 2.5em;
+  height: 3.8em;
 }
 
 .fc-col-time {
   width: 60px;
+}
+
+/* Improve readability when timed events overlap in week view */
+.fc-timegrid-event {
+  min-height: 44px;
+  border-width: 1px;
+}
+
+.fc-timegrid-event .fc-event-main {
+  padding: 3px 6px;
+}
+
+.fc-timegrid-col-events {
+  margin: 0 2px;
+}
+
+/* Keep concurrent events clearly separated in the same timeslot */
+.fc-timegrid-event-harness {
+  padding-right: 2px;
+}
+
+.fc-timegrid-event {
+  border-radius: 8px;
 }
 
 /* Better spacing for list view */
@@ -83,6 +106,10 @@
 @media (max-width: 768px) {
   .fc-daygrid-day-frame {
     min-height: 80px;
+  }
+
+  .fc-timegrid-slot {
+    height: 3.1em;
   }
 
   .fc-event {

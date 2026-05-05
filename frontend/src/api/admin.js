@@ -8,6 +8,8 @@ export const deactivateUser = (id) => api.patch(`/admin/users/${id}/deactivate`)
 
 export const activateUser = (id) => api.patch(`/admin/users/${id}/activate`);
 
+export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
+
 export const assignUserRole = (id, role) =>
   api.patch(`/admin/users/${id}/role`, { role });
 
@@ -27,6 +29,9 @@ export const getAvgParticipation = () =>
 
 export const getEventsPerOrganizer = () =>
   api.get('/admin/reports/events-per-organizer');
+
+export const getAllEvents = (params) =>
+  api.get('/admin/events', { params });
 
 export const createFaculty = (data) => api.post('/admin/faculties', data);
 

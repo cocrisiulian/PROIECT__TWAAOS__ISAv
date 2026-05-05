@@ -19,10 +19,15 @@ vi.mock('zustand/middleware', () => ({
   persist: (fn) => fn,
 }));
 
-// Mock useAuthStore so we control store state per-test
-vi.mock('../store/authStore.js', () => ({
-  useAuthStore: vi.fn(),
-}));
+// Keep real token helpers, mock only the store hook so we control state per-test
+vi.mock('../store/authStore.js', async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    useAuthStore: vi.fn(),
+  };
+});
 
 import { useAuthStore } from '../store/authStore.js';
 import AuthGuard from '../components/auth/AuthGuard.jsx';

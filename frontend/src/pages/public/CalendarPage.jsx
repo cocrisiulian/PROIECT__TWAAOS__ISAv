@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -9,28 +10,72 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { getEvents } from '../../api/events.js';
 import DayEventsModal from '../../components/events/DayEventsModal.jsx';
 import Navbar from '../../components/layout/Navbar.jsx';
+import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 import './CalendarPage.css';
 
 export default function CalendarPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
+
+  const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
+  const [selectedDateKey, setSelectedDateKey] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['events-calendar'],
-    queryFn: () => getEvents({ per_page: 200, page: 1 }).then((r) => r.data),
+    queryFn: () => getEvents({ per_page: 100, page: 1 }).then((r) => r.data),
   });
+
+  const toLocalDateKey = (value) => {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const toStartOfDay = (value) => {
+    const date = value instanceof Date ? new Date(value) : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
 
   // Organizează evenimentele pe zile pentru modal
   const eventsByDate = useMemo(() => {
     const grouped = {};
-    (data?.items || []).forEach((event) => {
-      const dateKey = new Date(event.start_datetime).toISOString().split('T')[0];
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
+
+    const getEventDateKeys = (startValue, endValue) => {
+      const startDay = toStartOfDay(startValue);
+      if (!startDay) return [];
+
+      const rawEndDay = toStartOfDay(endValue);
+      const endDay = rawEndDay && rawEndDay >= startDay ? rawEndDay : startDay;
+
+      const keys = [];
+      const cursor = new Date(startDay);
+      while (cursor <= endDay) {
+        const key = toLocalDateKey(cursor);
+        if (key) keys.push(key);
+        cursor.setDate(cursor.getDate() + 1);
       }
-      grouped[dateKey].push(event);
+
+      return keys;
+    };
+
+    (data?.items || []).forEach((event) => {
+      const dateKeys = getEventDateKeys(event.start_datetime, event.end_datetime);
+      dateKeys.forEach((dateKey) => {
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(event);
+      });
     });
+
     return grouped;
   }, [data]);
 
@@ -38,36 +83,43 @@ export default function CalendarPage() {
     return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
   };
 
-  const calEvents = (data?.items || []).map((e) => ({
-    id: e.id,
-    title: truncateTitle(e.title),
-    start: e.start_datetime,
-    end: e.end_datetime,
-    backgroundColor: e.category?.color_hex || '#3B82F6',
-    borderColor: e.category?.color_hex || '#3B82F6',
-    extendedProps: {
-      fullTitle: e.title,
-      location: e.location,
-      category: e.category,
-    },
-  }));
+  const calEvents = useMemo(() => {
+    const sortedEvents = [...(data?.items || [])].sort((a, b) => {
+      const aStart = new Date(a.start_datetime).getTime();
+      const bStart = new Date(b.start_datetime).getTime();
+      return aStart - bStart;
+    });
+
+    return sortedEvents.map((e) => ({
+      id: e.id,
+      title: truncateTitle(e.title),
+      start: e.start_datetime,
+      end: e.end_datetime,
+      backgroundColor: e.category?.color_hex || '#3B82F6',
+      borderColor: e.category?.color_hex || '#3B82F6',
+      extendedProps: {
+        fullTitle: e.title,
+        location: e.location,
+        category: e.category,
+      },
+    }));
+  }, [data]);
 
   const handleDateClick = (dateInfo) => {
-    const dateStr = dateInfo.dateStr;
-    const date = new Date(dateStr);
-    setSelectedDate(date);
+    setSelectedDate(dateInfo.date);
+    setSelectedDateKey(dateInfo.dateStr);
     setShowDayModal(true);
   };
 
-  const dayEventsForModal = selectedDate
-    ? eventsByDate[selectedDate.toISOString().split('T')[0]] || []
+  const dayEventsForModal = selectedDateKey
+    ? eventsByDate[selectedDateKey] || []
     : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">📅 Calendar Evenimente</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('public.calendar.title')}</h1>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -78,7 +130,12 @@ export default function CalendarPage() {
               right: 'dayGridMonth,timeGridWeek,listWeek',
             }}
             events={calEvents}
-            eventClick={({ event }) => navigate(`/events/${event.id}`)}
+            eventOrder="start,-duration,title"
+            eventOrderStrict={true}
+            eventMinHeight={44}
+            slotEventOverlap={false}
+            expandRows={true}
+            eventClick={({ event }) => navigate(localizedTo(`/events/${event.id}`))}
             dateClick={handleDateClick}
             height="auto"
             eventDisplay="block"

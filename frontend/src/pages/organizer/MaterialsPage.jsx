@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { uploadMaterial, deleteMaterial } from '../../api/organizer.js';
 import { getEvent } from '../../api/events.js';
 import Navbar from '../../components/layout/Navbar.jsx';
+import { toPublicAssetUrl } from '../../utils/assetUrl.js';
 
 const FILE_ICONS = {
   pdf: '📄',
@@ -25,14 +26,16 @@ export default function MaterialsPage() {
   });
 
   const uploadMutation = useMutation({
+    mutationKey: ['event-organizer', id],
     mutationFn: (file) => uploadMaterial(id, file),
-    onSuccess: () => { toast.success('Uploaded!'); queryClient.invalidateQueries(['event-organizer', id]); },
+    onSuccess: () => { toast.success('Uploaded!'); },
     onError: (err) => toast.error(err.response?.data?.detail || 'Upload failed'),
   });
 
   const deleteMutation = useMutation({
+    mutationKey: ['event-organizer', id],
     mutationFn: (matId) => deleteMaterial(id, matId),
-    onSuccess: () => { toast.success('Deleted'); queryClient.invalidateQueries(['event-organizer', id]); },
+    onSuccess: () => { toast.success('Deleted'); },
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed'),
   });
 
@@ -89,7 +92,7 @@ export default function MaterialsPage() {
                     </p>
                   </div>
                   <a
-                    href={`/uploads/${m.file_url}`}
+                    href={toPublicAssetUrl(m.file_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:underline mr-3"

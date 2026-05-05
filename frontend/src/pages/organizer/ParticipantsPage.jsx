@@ -17,8 +17,9 @@ export default function ParticipantsPage() {
   });
 
   const checkInMutation = useMutation({
+    mutationKey: ['participants', id],
     mutationFn: (regId) => checkIn(id, regId),
-    onSuccess: () => { toast.success('Checked in!'); queryClient.invalidateQueries(['participants', id]); },
+    onSuccess: () => { toast.success('Checked in!'); },
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed'),
   });
 

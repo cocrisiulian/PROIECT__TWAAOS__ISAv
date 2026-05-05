@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getEvents } from '../../api/events.js';
 import EventCard from '../../components/events/EventCard.jsx';
 import EventFilters from '../../components/events/EventFilters.jsx';
@@ -15,6 +16,7 @@ function Spinner() {
 }
 
 export default function EventsListPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState('grid');
 
@@ -55,14 +57,14 @@ export default function EventsListPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Events</h1>
-            <p className="text-sm text-gray-500 mt-1">{total} events found</p>
+            <h1 className="text-2xl font-bold text-gray-900">{t('public.eventsList.title')}</h1>
+            <p className="text-sm text-gray-500 mt-1">{total} {t('public.eventsList.found')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-700'}`}
-              title="Grid view"
+              title={t('public.eventsList.gridView')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -71,7 +73,7 @@ export default function EventsListPage() {
             <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-700'}`}
-              title="List view"
+              title={t('public.eventsList.listView')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -91,14 +93,14 @@ export default function EventsListPage() {
             {isLoading ? (
               <Spinner />
             ) : isError ? (
-              <p className="text-center text-red-500 py-20">Failed to load events. Please try again.</p>
+              <p className="text-center text-red-500 py-20">{t('public.eventsList.loadError')}</p>
             ) : events.length === 0 ? (
               <div className="text-center py-20 text-gray-500">
                 <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-lg font-medium">No events found</p>
-                <p className="text-sm mt-1">Try adjusting your filters.</p>
+                <p className="text-lg font-medium">{t('public.eventsList.noEvents')}</p>
+                <p className="text-sm mt-1">{t('public.eventsList.adjustFilters')}</p>
               </div>
             ) : (
               <>
@@ -119,15 +121,15 @@ export default function EventsListPage() {
                       disabled={page <= 1}
                       className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
                     >
-                      Previous
+                      {t('public.eventsList.previous')}
                     </button>
-                    <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
+                    <span className="text-sm text-gray-600">{t('public.eventsList.pageOf', { page, total: totalPages })}</span>
                     <button
                       onClick={() => setPage(page + 1)}
                       disabled={page >= totalPages}
                       className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
                     >
-                      Next
+                      {t('public.eventsList.next')}
                     </button>
                   </div>
                 )}

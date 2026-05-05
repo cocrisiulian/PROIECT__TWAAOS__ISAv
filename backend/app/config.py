@@ -1,4 +1,9 @@
 from pydantic_settings import BaseSettings
+from pathlib import Path
+
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT_DIR = BACKEND_DIR.parent
 
 
 class Settings(BaseSettings):
@@ -21,7 +26,11 @@ class Settings(BaseSettings):
     FRONTEND_RESET_PASSWORD_PATH: str = "/reset-password"
 
     class Config:
-        env_file = ".env"
+        env_file = (
+            str(PROJECT_ROOT_DIR / ".env"),
+            str(BACKEND_DIR / ".env"),
+            ".env",
+        )
         extra = "ignore"
 
 

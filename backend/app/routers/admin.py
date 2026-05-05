@@ -8,6 +8,7 @@ from app.database import get_db
 from app.core.dependencies import require_admin
 from app.core.security import hash_password
 from app.models.user import User, UserRole
+from app.models.student import Student
 from app.models.event import Event, EventStatus
 from app.models.event_registration import EventRegistration
 from app.models.faculty import Faculty, Department
@@ -18,9 +19,59 @@ from app.schemas.lookup_schemas import FacultyCreate, DepartmentCreate, Category
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
+EVENT_STATUS_FILTER_PATTERN = "^(all|draft|pending_approval|published|rejected|cancelled)$"
+STATUS_ALIASES = {
+    "approved": EventStatus.published,
+    "pending": EventStatus.pending_approval,
+    "deleted": EventStatus.cancelled,
+}
+
+
+def _serialize_staff_user(user: User) -> dict:
+    payload = UserRead.model_validate(user).model_dump()
+    payload["account_type"] = "staff"
+    return payload
+
+
+def _serialize_google_student(student: Student) -> dict:
+    return {
+        "id": str(student.id),
+        "username": None,
+        "email": student.email,
+        "full_name": student.full_name,
+        "role": "student",
+        "is_active": True,
+        "created_at": student.created_at,
+        "account_type": "google_student",
+    }
+
+
+def _event_list_query(db: Session, search: Optional[str] = None, status: Optional[str] = None):
+    q = db.query(Event).options(
+        joinedload(Event.organizer),
+        joinedload(Event.faculty),
+        joinedload(Event.category),
+    )
+
+    if status and status != "all":
+        q = q.filter(Event.status == status)
+
+    if search:
+        term = f"%{search}%"
+        q = q.filter(
+            Event.title.ilike(term)
+            | Event.description.ilike(term)
+            | User.full_name.ilike(term)
+            | User.username.ilike(term)
+        )
+
+    return q
+
 
 @router.get("/users", response_model=dict)
 def list_users(
+    source: str = Query("all", pattern="^(staff|students|all)$"),
+    role: Optional[UserRole] = None,
     is_active: Optional[bool] = None,
     search: Optional[str] = None,
     page: int = Query(1, ge=1),
@@ -28,18 +79,107 @@ def list_users(
     db: Session = Depends(get_db),
     admin=Depends(require_admin),
 ):
-    q = db.query(User)
+    term = f"%{search}%" if search else None
+
+    if source == "students":
+        student_query = db.query(Student)
+        if term:
+            student_query = student_query.filter(
+                Student.full_name.ilike(term) | Student.email.ilike(term)
+            )
+        if role is not None and role != UserRole.student:
+            return {"items": [], "total": 0}
+
+        total = student_query.count()
+        students = student_query.order_by(Student.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        return {
+            "items": [_serialize_google_student(student) for student in students],
+            "total": total,
+        }
+
+    if source == "all":
+        user_query = db.query(User)
+        if is_active is not None:
+            user_query = user_query.filter(User.is_active == is_active)
+        if role is not None:
+            user_query = user_query.filter(User.role == role)
+        if term:
+            user_query = user_query.filter(User.full_name.ilike(term) | User.username.ilike(term) | User.email.ilike(term))
+        staff_items = [_serialize_staff_user(user) for user in user_query.all()]
+
+        include_students = role is None or role == UserRole.student
+        student_items = []
+        if include_students:
+            student_query = db.query(Student)
+            if term:
+                student_query = student_query.filter(
+                    Student.full_name.ilike(term) | Student.email.ilike(term)
+                )
+            student_items = [_serialize_google_student(student) for student in student_query.all()]
+
+        items = staff_items + student_items
+        items.sort(key=lambda item: item.get("created_at") or datetime.min, reverse=True)
+        total = len(items)
+        start = (page - 1) * per_page
+        end = start + per_page
+        return {
+            "items": items[start:end],
+            "total": total,
+        }
+
+    user_query = db.query(User)
     if is_active is not None:
-        q = q.filter(User.is_active == is_active)
-    if search:
-        term = f"%{search}%"
-        q = q.filter(User.full_name.ilike(term) | User.username.ilike(term))
-    total = q.count()
-    users = q.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        user_query = user_query.filter(User.is_active == is_active)
+    if role is not None:
+        user_query = user_query.filter(User.role == role)
+    if term:
+        user_query = user_query.filter(User.full_name.ilike(term) | User.username.ilike(term) | User.email.ilike(term))
+
+    total = user_query.count()
+    users = user_query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
     return {
-        "items": [UserRead.model_validate(u).model_dump() for u in users],
+        "items": [_serialize_staff_user(user) for user in users],
         "total": total,
     }
+
+
+@router.get("/events", response_model=dict)
+def list_events(
+    status: str = Query("all", pattern="^(all|draft|pending_approval|published|rejected|cancelled|approved|pending|deleted)$"),
+    search: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=500),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    q = db.query(Event).options(
+        joinedload(Event.organizer),
+        joinedload(Event.faculty),
+        joinedload(Event.category),
+    )
+
+    if status != "all":
+        normalized_status = STATUS_ALIASES.get(status, status)
+        q = q.filter(Event.status == normalized_status)
+
+    if search:
+        term = f"%{search}%"
+        q = q.join(User, User.id == Event.organizer_id).filter(
+            Event.title.ilike(term)
+            | Event.description.ilike(term)
+            | Event.location.ilike(term)
+            | User.full_name.ilike(term)
+            | User.username.ilike(term)
+        )
+
+    total = q.count()
+    events = q.order_by(Event.start_datetime.asc(), Event.created_at.asc())
+    events = events.offset((page - 1) * per_page).limit(per_page).all()
+
+    from app.schemas.event_schemas import EventListItem
+
+    items = [EventListItem.model_validate(event).model_dump() for event in events]
+    return {"items": items, "total": total}
 
 
 @router.post("/users", response_model=UserRead, status_code=201)
@@ -106,6 +246,26 @@ def activate_user(user_id: str, db: Session = Depends(get_db), admin=Depends(req
     return user
 
 
+@router.delete("/users/{user_id}")
+def delete_user(user_id: str, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if str(user.id) == str(admin.id):
+        raise HTTPException(status_code=400, detail="Admin cannot delete own account")
+
+    if user.is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="User must be deactivated before deletion",
+        )
+
+    db.delete(user)
+    db.commit()
+    return {"detail": "User deleted successfully"}
+
+
 @router.get("/events/pending", response_model=dict)
 def list_pending_events(
     page: int = Query(1, ge=1),
@@ -152,8 +312,11 @@ def reject_event(
         raise HTTPException(status_code=404, detail="Event not found")
     if event.status != EventStatus.pending_approval:
         raise HTTPException(status_code=400, detail="Event is not pending approval")
+    reason = str(body.get("reason") or "").strip()
+    if not reason:
+        reason = "Needs updates before approval."
     event.status = EventStatus.rejected
-    event.rejection_reason = body.get("reason", "")
+    event.rejection_reason = reason[:200]
     db.commit()
     return {"detail": "Event rejected"}
 

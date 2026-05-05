@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.database import SessionLocal
 from app.models.user import User, UserRole
-from app.models.student import Student
 from app.models.event import Event, EventStatus, ParticipationMode
 from app.models.faculty import Faculty, Department
 from app.models.category import Category
@@ -103,17 +102,6 @@ def seed():
             organizer_user.role = UserRole.organizer
             organizer_user.is_active = True
             print("Updated demo organizer role/status")
-
-        # Demo student
-        if not db.query(Student).filter(Student.email == "student@student.usv.ro").first():
-            student = Student(
-                email="student@student.usv.ro",
-                full_name="Student Demo",
-                google_sub="demo-student-google-sub-12345",
-                avatar_url="https://via.placeholder.com/150",
-            )
-            db.add(student)
-            print("Created demo student: student@student.usv.ro")
 
         db.flush()
 

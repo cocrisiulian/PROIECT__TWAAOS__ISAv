@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.dependencies import get_current_user_payload
@@ -10,12 +10,17 @@ from app.models.event_registration import EventRegistration, RegistrationStatus
 from app.models.faculty import Department, Faculty
 from app.models.student import Student
 from app.models.user import User
+from app.models.role_upgrade_request import RoleUpgradeRequest, RoleUpgradeRequestStatus
 from app.schemas.account_schemas import (
     AccountEventItem,
     MonthlyStats,
     StudentAccountOverview,
     StudentAccountProfile,
     StudentAccountUpdate,
+)
+from app.schemas.role_upgrade_schemas import (
+    CreateRoleUpgradeRequest,
+    RoleUpgradeRequestRead,
 )
 
 router = APIRouter(prefix="/account", tags=["Account"])
@@ -204,3 +209,86 @@ def update_my_account(
         )
 
     raise HTTPException(status_code=403, detail="Unsupported account role")
+
+
+# Role Upgrade Requests
+@router.post("/role-upgrade-request", response_model=RoleUpgradeRequestRead, status_code=status.HTTP_201_CREATED)
+def request_role_upgrade(
+    body: CreateRoleUpgradeRequest,
+    db: Session = Depends(get_db),
+    payload: dict = Depends(get_current_user_payload),
+):
+    """Create a role upgrade request. User must be a visitor."""
+    user_id = payload.get("sub")
+    role = payload.get("role")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if role != "visitor":
+        raise HTTPException(
+            status_code=400,
+            detail="Only visitors can request role upgrades"
+        )
+    
+    # Check if there's already a pending request
+    existing_request = db.query(RoleUpgradeRequest).filter(
+        RoleUpgradeRequest.user_id == user_id,
+        RoleUpgradeRequest.status == RoleUpgradeRequestStatus.pending
+    ).first()
+    
+    if existing_request:
+        raise HTTPException(
+            status_code=400,
+            detail="You already have a pending role upgrade request"
+        )
+    
+    # Create new request
+    upgrade_request = RoleUpgradeRequest(
+        user_id=user_id,
+        requested_role=body.requested_role,
+        reason=body.reason,
+        status=RoleUpgradeRequestStatus.pending,
+    )
+    
+    db.add(upgrade_request)
+    db.commit()
+    db.refresh(upgrade_request)
+    
+    return RoleUpgradeRequestRead(
+        id=str(upgrade_request.id),
+        user_id=str(upgrade_request.user_id),
+        requested_role=upgrade_request.requested_role.value,
+        status=upgrade_request.status.value,
+        reason=upgrade_request.reason,
+        created_at=upgrade_request.created_at,
+        updated_at=upgrade_request.updated_at,
+    )
+
+
+@router.get("/role-upgrade-requests")
+def list_my_role_upgrade_requests(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(get_current_user_payload),
+):
+    """Get current user's role upgrade requests."""
+    user_id = payload.get("sub")
+    
+    requests = db.query(RoleUpgradeRequest).filter(
+        RoleUpgradeRequest.user_id == user_id
+    ).order_by(RoleUpgradeRequest.created_at.desc()).all()
+    
+    return [
+        RoleUpgradeRequestRead(
+            id=str(req.id),
+            user_id=str(req.user_id),
+            requested_role=req.requested_role.value,
+            status=req.status.value,
+            reason=req.reason,
+            created_at=req.created_at,
+            updated_at=req.updated_at,
+        )
+        for req in requests
+    ]
+

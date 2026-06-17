@@ -40,3 +40,26 @@ class EventStatsRead(BaseModel):
     feedback_count: int
     avg_rating: Optional[float] = None
     rating_distribution: dict
+
+
+class TicketIssueRead(BaseModel):
+    event_id: uuid.UUID
+    registration_id: uuid.UUID
+    event_title: str
+    attendee_name: str
+    ticket_token: str
+    qr_code_base64: str
+
+
+class TicketValidationRead(BaseModel):
+    valid: bool
+    event_id: uuid.UUID
+    registration_id: uuid.UUID
+    attendee_name: str
+    event_title: str
+    checked_in: bool
+    checked_in_at: Optional[datetime] = None
+
+
+class TicketValidationRequest(BaseModel):
+    ticket_token: str

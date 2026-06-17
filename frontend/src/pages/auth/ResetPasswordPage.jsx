@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { confirmPasswordReset } from '../../api/auth.js';
 import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 
 function ResetPasswordPage() {
   const { t, i18n } = useTranslation();
@@ -45,8 +46,8 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
+    <PageFrame centered showNavbar={false}>
+      <div className="usv-card usv-card-body w-full max-w-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.resetPassword.title')}</h1>
         <p className="text-sm text-gray-500 mb-6">{t('auth.resetPassword.subtitle')}</p>
 
@@ -66,7 +67,7 @@ function ResetPasswordPage() {
                 rows={3}
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="usv-input"
                 placeholder="Paste reset token"
               />
             </div>
@@ -77,7 +78,7 @@ function ResetPasswordPage() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="usv-input"
                 autoComplete="new-password"
                 placeholder="Minimum 8 characters"
               />
@@ -89,7 +90,7 @@ function ResetPasswordPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="usv-input"
                 autoComplete="new-password"
                 placeholder="Re-enter new password"
               />
@@ -98,7 +99,7 @@ function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium px-6 py-3 rounded-lg transition disabled:opacity-50"
+              className="usv-button-primary w-full"
             >
               {loading ? t('auth.resetPassword.resetting') : t('auth.resetPassword.reset')}
             </button>
@@ -112,7 +113,7 @@ function ResetPasswordPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </PageFrame>
   );
 }
 

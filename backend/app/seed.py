@@ -109,7 +109,28 @@ def seed():
         admin_user = db.query(User).filter(User.username == "admin").first()
         org_user = db.query(User).filter(User.username == "organizator").first()
         academic_cat = db.query(Category).filter(Category.name == "Academic").first()
+        workshop_cat = db.query(Category).filter(Category.name == "Workshop").first()
+        conference_cat = db.query(Category).filter(Category.name == "Conferință").first()
+        culture_cat = db.query(Category).filter(Category.name == "Cultură").first()
+        social_cat = db.query(Category).filter(Category.name == "Social").first()
+        career_cat = db.query(Category).filter(Category.name == "Carieră").first()
         fiesc_faculty = db.query(Faculty).filter(Faculty.short_name == "FIESC").first()
+
+        cover_images = {
+            "Demo: Conferință Inginerie Software": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+            "Demo: Workshop Python": "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=1200&q=80",
+            "Demo: Webinar Cloud Computing": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Conferință AI în Educație": "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Workshop Python Avansat": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Webinar Securitate Cibernetică": "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Concurs Roboți Studențești": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Întâlnire Career Hub": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Târg de Voluntariat": "https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Expoziție Proiecte Studențești": "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Masă Rotundă Inovație Digitală": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Seară Culturală": "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
+            "05/05/2026 - Laborator Deschis Cloud": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80",
+        }
 
         now = datetime.utcnow()
 
@@ -130,9 +151,14 @@ def seed():
                 status=EventStatus.published,
                 approved_by_id=admin_user.id,
                 approved_at=now,
+                cover_image_url=cover_images.get("Demo: Conferință Inginerie Software"),
             )
             db.add(event1)
             print("Created demo event 1 (published): Conferință Inginerie Software")
+        else:
+            event1 = db.query(Event).filter(Event.title == "Demo: Conferință Inginerie Software").first()
+            if event1 and not event1.cover_image_url:
+                event1.cover_image_url = cover_images.get("Demo: Conferință Inginerie Software")
 
         # Demo event 2: Published event with max participants
         if not db.query(Event).filter(Event.title == "Demo: Workshop Python").first():
@@ -152,9 +178,14 @@ def seed():
                 status=EventStatus.published,
                 approved_by_id=admin_user.id,
                 approved_at=now,
+                cover_image_url=cover_images.get("Demo: Workshop Python"),
             )
             db.add(event2)
             print("Created demo event 2 (published): Workshop Python")
+        else:
+            event2 = db.query(Event).filter(Event.title == "Demo: Workshop Python").first()
+            if event2 and not event2.cover_image_url:
+                event2.cover_image_url = cover_images.get("Demo: Workshop Python")
 
         db.flush()
 
@@ -173,9 +204,159 @@ def seed():
                 faculty_id=fiesc_faculty.id if fiesc_faculty else None,
                 category_id=academic_cat.id if academic_cat else None,
                 status=EventStatus.pending_approval,
+                cover_image_url=cover_images.get("Demo: Webinar Cloud Computing"),
             )
             db.add(event3)
             print("Created demo event 3 (pending approval): Webinar Cloud Computing")
+        else:
+            event3 = db.query(Event).filter(Event.title == "Demo: Webinar Cloud Computing").first()
+            if event3 and not event3.cover_image_url:
+                event3.cover_image_url = cover_images.get("Demo: Webinar Cloud Computing")
+
+        # Requested events for 05/05/2026
+        may_5_2026_events = [
+            {
+                "title": "05/05/2026 - Conferință AI în Educație",
+                "description": "Sesiune despre utilizarea inteligenței artificiale în procesele educaționale și administrative.",
+                "start": datetime(2026, 5, 5, 9, 0),
+                "end": datetime(2026, 5, 5, 10, 30),
+                "location": "Aula Magna, Corpul A",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": True,
+                "category": conference_cat,
+            },
+            {
+                "title": "05/05/2026 - Workshop Python Avansat",
+                "description": "Atelier practic despre generatoare, decoratori și structurarea proiectelor Python.",
+                "start": datetime(2026, 5, 5, 10, 0),
+                "end": datetime(2026, 5, 5, 12, 0),
+                "location": "Laboratorul 204, Corpul C",
+                "mode": ParticipationMode.physical,
+                "free": False,
+                "registration": True,
+                "max_participants": 25,
+                "category": workshop_cat,
+            },
+            {
+                "title": "05/05/2026 - Webinar Securitate Cibernetică",
+                "description": "Prezentare online despre bune practici de securitate pentru aplicații web și API-uri.",
+                "start": datetime(2026, 5, 5, 11, 0),
+                "end": datetime(2026, 5, 5, 12, 0),
+                "location": "Online",
+                "online_link": "https://meet.google.com/demo-cybersecurity-2026",
+                "mode": ParticipationMode.online,
+                "free": True,
+                "registration": False,
+                "category": academic_cat,
+            },
+            {
+                "title": "05/05/2026 - Concurs Roboți Studențești",
+                "description": "Competiție demonstrativă cu prototipuri realizate de echipele studențești.",
+                "start": datetime(2026, 5, 5, 12, 0),
+                "end": datetime(2026, 5, 5, 13, 30),
+                "location": "Holul central, Corpul D",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": True,
+                "max_participants": 40,
+                "category": None,
+            },
+            {
+                "title": "05/05/2026 - Întâlnire Career Hub",
+                "description": "Sesiune de consiliere pentru CV, interviuri și oportunități de internship.",
+                "start": datetime(2026, 5, 5, 13, 0),
+                "end": datetime(2026, 5, 5, 14, 0),
+                "location": "Sala de consiliere, Corpul B",
+                "mode": ParticipationMode.hybrid,
+                "free": True,
+                "registration": True,
+                "category": career_cat,
+            },
+            {
+                "title": "05/05/2026 - Târg de Voluntariat",
+                "description": "Prezentarea oportunităților de voluntariat din cadrul facultăților și ONG-urilor locale.",
+                "start": datetime(2026, 5, 5, 14, 0),
+                "end": datetime(2026, 5, 5, 16, 0),
+                "location": "Esplanada Universității",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": False,
+                "category": social_cat,
+            },
+            {
+                "title": "05/05/2026 - Expoziție Proiecte Studențești",
+                "description": "Expoziție cu proiecte dezvoltate în semestrul curent, deschisă publicului universitar.",
+                "start": datetime(2026, 5, 5, 15, 0),
+                "end": datetime(2026, 5, 5, 17, 0),
+                "location": "Galeria de la parter, Corpul A",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": False,
+                "category": academic_cat,
+            },
+            {
+                "title": "05/05/2026 - Masă Rotundă Inovație Digitală",
+                "description": "Discuții despre produse digitale, startup-uri și colaborarea dintre studenți și industrie.",
+                "start": datetime(2026, 5, 5, 16, 0),
+                "end": datetime(2026, 5, 5, 17, 30),
+                "location": "Sala Senatului",
+                "mode": ParticipationMode.hybrid,
+                "free": True,
+                "registration": True,
+                "category": conference_cat,
+            },
+            {
+                "title": "05/05/2026 - Seară Culturală",
+                "description": "Program artistic cu muzică, poezie și momente oferite de cluburile studențești.",
+                "start": datetime(2026, 5, 5, 18, 0),
+                "end": datetime(2026, 5, 5, 20, 0),
+                "location": "Amfiteatrul în aer liber",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": False,
+                "category": culture_cat,
+            },
+            {
+                "title": "05/05/2026 - Laborator Deschis Cloud",
+                "description": "Demonstrație practică despre deployment în containere și administrarea serviciilor cloud.",
+                "start": datetime(2026, 5, 5, 19, 0),
+                "end": datetime(2026, 5, 5, 21, 0),
+                "location": "Laboratorul DevOps, Corpul C",
+                "mode": ParticipationMode.physical,
+                "free": True,
+                "registration": True,
+                "max_participants": 20,
+                "category": workshop_cat,
+            },
+        ]
+
+        for event_data in may_5_2026_events:
+            existing_event = db.query(Event).filter(Event.title == event_data["title"]).first()
+            if not existing_event:
+                event = Event(
+                    title=event_data["title"],
+                    description=event_data["description"],
+                    start_datetime=event_data["start"],
+                    end_datetime=event_data["end"],
+                    location=event_data.get("location"),
+                    online_link=event_data.get("online_link"),
+                    participation_mode=event_data["mode"],
+                    is_free=event_data["free"],
+                    requires_registration=event_data["registration"],
+                    max_participants=event_data.get("max_participants"),
+                    organizer_id=org_user.id if org_user else admin_user.id,
+                    faculty_id=fiesc_faculty.id if fiesc_faculty else None,
+                    category_id=event_data["category"].id if event_data["category"] else None,
+                    status=EventStatus.published,
+                    approved_by_id=admin_user.id,
+                    approved_at=event_data["start"],
+                    cover_image_url=cover_images.get(event_data["title"]),
+                )
+                db.add(event)
+                print(f"Created requested event: {event_data['title']}")
+            elif not existing_event.cover_image_url:
+                existing_event.cover_image_url = cover_images.get(event_data["title"])
 
         db.commit()
         print("Seed complete!")

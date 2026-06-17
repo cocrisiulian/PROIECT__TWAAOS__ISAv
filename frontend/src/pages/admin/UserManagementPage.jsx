@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUsers, createUser, activateUser, deactivateUser, assignUserRole, deleteUser } from '../../api/admin';
-import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 import { DEFAULT_LANGUAGE, getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 export default function UserManagementPage() {
@@ -120,23 +120,23 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">{t('admin.users.title')}</h1>
+    <PageFrame
+      width="6xl"
+      title={t('admin.users.title')}
+      actions={(
         <button
           onClick={() => {
             setFeedback({ type: '', message: '' });
             setShowForm(!showForm);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+          className="usv-button-primary"
         >
           {t('admin.users.newUser')}
         </button>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
+      )}
+      contentClassName="space-y-4"
+    >
+      <div className="flex flex-wrap gap-2">
         <Link to={localizedTo('/admin')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
           {t('admin.users.dashboardLink')}
         </Link>
@@ -146,11 +146,14 @@ export default function UserManagementPage() {
         <Link to={localizedTo('/admin/reports')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
           {t('admin.users.reportsLink')}
         </Link>
+        <Link to={localizedTo('/admin/role-requests')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 bg-purple-50 border-purple-200 text-purple-700">
+          📋 Role Requests
+        </Link>
       </div>
 
       {feedback.message && (
         <div
-          className={`mb-4 rounded-lg px-4 py-2 text-sm ${
+          className={`rounded-lg px-4 py-2 text-sm ${
             feedback.type === 'error'
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-green-50 text-green-700 border border-green-200'
@@ -161,7 +164,7 @@ export default function UserManagementPage() {
       )}
 
       {showForm && (
-        <div className="bg-white rounded-xl shadow p-6 mb-6 border border-gray-100">
+        <div className="usv-card usv-card-body">
           <h2 className="font-semibold text-gray-700 mb-4">{t('admin.users.createForm')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -194,13 +197,13 @@ export default function UserManagementPage() {
             <button
               onClick={handleCreateUser}
               disabled={createMutation.isPending}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+              className="usv-button-primary"
             >
               {t('admin.users.save')}
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="border px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+              className="usv-button-secondary"
             >
               {t('admin.users.cancel')}
             </button>
@@ -208,7 +211,7 @@ export default function UserManagementPage() {
         </div>
       )}
 
-      <div className="mb-4">
+      <div>
         <div className="flex flex-col md:flex-row gap-3 md:items-center">
           <input
             className="border rounded-lg px-3 py-2 text-sm w-full md:w-80"
@@ -250,7 +253,7 @@ export default function UserManagementPage() {
       {isLoading ? (
         <p className="text-gray-500">{t('admin.users.loading')}</p>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+        <div className="usv-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
               <tr>
@@ -328,7 +331,6 @@ export default function UserManagementPage() {
           </table>
         </div>
       )}
-      </div>
-    </div>
+    </PageFrame>
   );
 }

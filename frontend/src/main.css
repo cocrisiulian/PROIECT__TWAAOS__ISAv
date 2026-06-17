@@ -1,102 +1,166 @@
 /* Main CSS - Styles */
 
-/* Reset and base */
-* {
-  box-sizing: border-box;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-body: 'Manrope', 'Segoe UI', 'Roboto', sans-serif;
+    --font-display: 'Domine', 'Georgia', serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: inherit;
+    color: #0f172a;
+    background:
+      linear-gradient(120deg, rgba(20, 37, 61, 0.06), transparent 45%),
+      radial-gradient(circle at top, rgba(26, 58, 92, 0.08), transparent 42%),
+      linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+  }
+
+  a {
+    color: #1d4ed8;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: #1e40af;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #0f172a;
+    font-family: var(--font-display);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  *:focus {
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+  }
+
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+  }
 }
 
-html {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  .usv-page-shell {
+    @apply min-h-screen text-slate-900;
+    background:
+      linear-gradient(120deg, rgba(20, 37, 61, 0.06), transparent 45%),
+      radial-gradient(circle at top, rgba(26, 58, 92, 0.08), transparent 42%),
+      linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+  }
+
+  .usv-page-frame {
+    @apply relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8;
+  }
+
+  .usv-page-frame--centered {
+    @apply flex min-h-[calc(100vh-4rem)] items-center justify-center;
+  }
+
+  .usv-page-hero {
+    @apply mb-8 rounded-[28px] border border-slate-200/80 bg-gradient-to-br from-white/95 via-white/90 to-slate-50/80 p-7 shadow-[0_28px_70px_rgba(15,23,42,0.12)] backdrop-blur;
+  }
+
+  .usv-page-title {
+    @apply text-3xl font-semibold tracking-tight text-slate-900 md:text-[2.6rem];
+    font-family: var(--font-display);
+  }
+
+  .usv-page-subtitle {
+    @apply mt-3 max-w-3xl text-sm text-slate-600/90 md:text-base;
+  }
+
+  .usv-card {
+    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_20px_55px_rgba(15,23,42,0.08)] backdrop-blur;
+  }
+
+  .usv-card-header {
+    @apply border-b border-slate-200/80 bg-gradient-to-r from-slate-50 via-white to-white px-6 py-4;
+  }
+
+  .usv-card-body {
+    @apply p-6;
+  }
+
+  .usv-surface {
+    @apply rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_12px_35px_rgba(15,23,42,0.06)] backdrop-blur;
+  }
+
+  .usv-input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 transition;
+  }
+
+  .usv-input:focus {
+    @apply border-blue-500 ring-2 ring-blue-500/20 outline-none;
+  }
+
+  .usv-button-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#1a3a5c] via-[#183452] to-[#122a45] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-[#15324f] hover:via-[#132a45] hover:to-[#10263f] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .usv-button-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-300/80 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .usv-badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  }
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: inherit;
-  background-color: #f9fafb;
-  color: #111827;
-}
-
-/* Scrollbar custom */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Focus styles pentru accesibilitate */
-*:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-button:focus,
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Link-uri */
-a {
-  color: #2563eb;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: #1d4ed8;
-}
-
-/* Heading-uri */
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #111827;
-}
-
-/* Paragrafe */
-p {
-  margin: 0;
-}
-
-/* Liste */
-ul, ol {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-/* Form elements */
-input, textarea, select {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-}
-
-/* Adds a visible frame on the native calendar trigger for datetime inputs. */
 input.event-datetime-input::-webkit-calendar-picker-indicator {
   border: 1px solid #94a3b8;
   border-radius: 6px;
@@ -111,7 +175,6 @@ input.event-datetime-input:focus::-webkit-calendar-picker-indicator {
   background-color: #eff6ff;
 }
 
-/* Utility classes */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -124,7 +187,6 @@ input.event-datetime-input:focus::-webkit-calendar-picker-indicator {
   border: 0;
 }
 
-/* Loading spinner */
 .spinner {
   display: inline-block;
   width: 20px;
@@ -140,7 +202,6 @@ input.event-datetime-input:focus::-webkit-calendar-picker-indicator {
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive breakpoints */
 @media (max-width: 640px) {
   html {
     font-size: 14px;
@@ -153,7 +214,6 @@ input.event-datetime-input:focus::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Print styles */
 @media print {
   body {
     background: white !important;

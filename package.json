@@ -8,6 +8,7 @@
     "logs": "docker-compose logs -f",
     "seed": "docker exec -it usv_events_backend python -m app.seed",
     "test": "docker exec -it usv_events_backend pytest",
+    "docs:pdf": "docker compose run --rm -e INSTALL_GUIDE_SOURCE=/docs/installation-guide.md -e INSTALL_GUIDE_OUTPUT=/docs/installation-guide.pdf backend python scripts/generate_install_guide_pdf.py",
     "build:frontend": "npm run build --prefix frontend",
     "dev:frontend": "npm run dev --prefix frontend",
     "db:sh": "docker exec -it usv_events_db psql -U root -d events_db",

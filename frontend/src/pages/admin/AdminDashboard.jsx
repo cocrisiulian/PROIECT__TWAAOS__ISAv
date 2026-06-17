@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 import { DEFAULT_LANGUAGE, getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 export default function AdminDashboard() {
@@ -29,27 +29,34 @@ export default function AdminDashboard() {
       path: localizedTo('/admin/reports'),
       color: 'bg-green-500',
     },
+    {
+      title: 'Role Upgrade Requests',
+      description: 'Manage user role upgrade requests',
+      path: localizedTo('/admin/role-requests'),
+      color: 'bg-purple-500',
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('admin.dashboard.title')}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {cards.map((card) => (
-            <button
-              key={card.path}
-              onClick={() => navigate(card.path)}
-              className="text-left p-6 rounded-xl shadow-md bg-white hover:shadow-lg transition border border-gray-100"
-            >
-              <div className={`w-10 h-10 rounded-full ${card.color} mb-4`} />
-              <h2 className="text-lg font-semibold text-gray-800 mb-1">{card.title}</h2>
-              <p className="text-sm text-gray-500">{card.description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+    <PageFrame
+      title={t('admin.dashboard.title')}
+      subtitle={t('admin.dashboard.subtitle')}
+      width="5xl"
+      contentClassName="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+    >
+      {cards.map((card) => (
+        <button
+          key={card.path}
+          onClick={() => navigate(card.path)}
+          className="usv-card text-left transition hover:-translate-y-0.5 hover:shadow-[0_22px_50px_rgba(15,23,42,0.1)]"
+        >
+          <div className="usv-card-body">
+            <div className={`mb-4 h-10 w-10 rounded-full ${card.color}`} />
+            <h2 className="mb-1 text-lg font-semibold text-slate-800">{card.title}</h2>
+            <p className="text-sm text-slate-500">{card.description}</p>
+          </div>
+        </button>
+      ))}
+    </PageFrame>
   );
 }

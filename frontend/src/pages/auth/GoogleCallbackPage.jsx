@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { handleGoogleCallback } from '../../api/auth.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { getPathWithLanguage, normalizeLanguage, extractLanguageFromPath } from '../../i18n/config.js';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 
 const CALLBACK_STORAGE_PREFIX = 'google_oauth_callback:';
 
@@ -52,7 +53,19 @@ function GoogleCallbackPage() {
 
     // Check if this specific code/state has already been successfully processed in this session
     if (callbackKey && window.sessionStorage.getItem(callbackKey) === 'done') {
-      navigate(localizedTo('/events'), { replace: true });
+      // If already processed, get role from storage to determine where to redirect
+      const storedRole = localStorage.getItem('auth_user') 
+        ? JSON.parse(localStorage.getItem('auth_user')).role 
+        : null;
+      let redirectPath = localizedTo('/events');
+      if (storedRole === 'admin') {
+        redirectPath = localizedTo('/admin');
+      } else if (storedRole === 'organizer') {
+        redirectPath = localizedTo('/organizer');
+      } else if (storedRole === 'visitor') {
+        redirectPath = localizedTo('/visitor/role-request');
+      }
+      navigate(redirectPath, { replace: true });
       return;
     }
 
@@ -81,7 +94,18 @@ function GoogleCallbackPage() {
 
         const { user = null, access_token, role } = res.data;
         setAuth(user, access_token, role);
-        navigate(localizedTo('/events'), { replace: true });
+
+        // Redirect based on role
+        let redirectPath = localizedTo('/events');
+        if (role === 'admin') {
+          redirectPath = localizedTo('/admin');
+        } else if (role === 'organizer') {
+          redirectPath = localizedTo('/organizer');
+        } else if (role === 'visitor') {
+          redirectPath = localizedTo('/visitor/role-request');
+        }
+
+        navigate(redirectPath, { replace: true });
       })
       .catch((err) => {
         if (!isActive || settledRef.current) return;
@@ -105,8 +129,8 @@ function GoogleCallbackPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-2xl shadow-md p-8 max-w-md w-full text-center">
+      <PageFrame centered showNavbar={false}>
+        <div className="usv-card usv-card-body max-w-md w-full text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -116,22 +140,22 @@ function GoogleCallbackPage() {
           <p className="text-gray-500 mb-6">{error}</p>
           <Link
             to={localizedTo('/login')}
-            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="usv-button-primary"
           >
             Back to Login
           </Link>
         </div>
-      </div>
+      </PageFrame>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <PageFrame centered showNavbar={false}>
       <div className="text-center">
         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600">Completing sign in...</p>
       </div>
-    </div>
+    </PageFrame>
   );
 }
 

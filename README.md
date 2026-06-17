@@ -45,6 +45,8 @@ Proiect pentru disciplinele **Inginerie Software Avansată (ISA)** și **Tehnolo
 
 ## Instalare si rulare
 
+Pentru un ghid complet de instalare, vezi [docs/installation-guide.md](docs/installation-guide.md) si versiunea PDF [docs/installation-guide.pdf](docs/installation-guide.pdf).
+
 ### 1. Cloneaza/deschide proiectul
 
 ```bash

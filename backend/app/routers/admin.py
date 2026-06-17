@@ -13,9 +13,16 @@ from app.models.event import Event, EventStatus
 from app.models.event_registration import EventRegistration
 from app.models.faculty import Faculty, Department
 from app.models.category import Category
+from app.models.role_upgrade_request import RoleUpgradeRequest, RoleUpgradeRequestStatus, RoleType
 from app.schemas.user_schemas import UserCreate, UserRead, UserRoleAssign
 from app.schemas.event_schemas import EventDetail
 from app.schemas.lookup_schemas import FacultyCreate, DepartmentCreate, CategoryCreate, FacultyRead, DepartmentRead, CategoryRead
+from app.schemas.role_upgrade_schemas import (
+    RoleUpgradeRequestList,
+    RoleUpgradeRequestDetailRead,
+    ApproveRoleUpgradeRequest,
+    RejectRoleUpgradeRequest,
+)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -405,3 +412,117 @@ def create_category(body: CategoryCreate, db: Session = Depends(get_db), admin=D
     db.commit()
     db.refresh(cat)
     return cat
+
+
+# Role Upgrade Request Endpoints
+@router.get("/role-requests", response_model=RoleUpgradeRequestList)
+def list_role_upgrade_requests(
+    status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """List all role upgrade requests. Admin only."""
+    q = db.query(RoleUpgradeRequest).options(
+        joinedload(RoleUpgradeRequest.user),
+        joinedload(RoleUpgradeRequest.reviewed_by),
+    )
+    
+    if status:
+        q = q.filter(RoleUpgradeRequest.status == status)
+    
+    total = q.count()
+    requests = q.order_by(RoleUpgradeRequest.created_at.desc()).offset(
+        (page - 1) * per_page
+    ).limit(per_page).all()
+    
+    items = []
+    for req in requests:
+        item = RoleUpgradeRequestDetailRead(
+            id=str(req.id),
+            user_id=str(req.user_id),
+            requested_role=req.requested_role.value,
+            status=req.status.value,
+            reason=req.reason,
+            created_at=req.created_at,
+            updated_at=req.updated_at,
+            user_email=req.user.email,
+            user_full_name=req.user.full_name,
+            user_username=req.user.username,
+            reviewed_by_id=str(req.reviewed_by_id) if req.reviewed_by_id else None,
+            decision_reason=req.decision_reason,
+        )
+        items.append(item)
+    
+    return RoleUpgradeRequestList(total=total, requests=items)
+
+
+@router.post("/role-requests/{request_id}/approve")
+def approve_role_upgrade_request(
+    request_id: str,
+    body: ApproveRoleUpgradeRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """Approve a role upgrade request. Admin only."""
+    req = db.query(RoleUpgradeRequest).filter(RoleUpgradeRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Role upgrade request not found")
+    
+    if req.status != RoleUpgradeRequestStatus.pending:
+        raise HTTPException(status_code=400, detail=f"Request is already {req.status.value}")
+    
+    # Update the request status
+    req.status = RoleUpgradeRequestStatus.approved
+    req.reviewed_by_id = admin.id
+    req.decision_reason = body.decision_reason
+    
+    # Update user role
+    user = db.query(User).filter(User.id == req.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Map role type to UserRole
+    role_map = {
+        RoleType.student: UserRole.student,
+        RoleType.organizer: UserRole.organizer,
+    }
+    user.role = role_map[req.requested_role]
+    
+    db.commit()
+    
+    return {
+        "detail": "Role upgrade request approved",
+        "user_id": str(req.user_id),
+        "new_role": user.role.value,
+    }
+
+
+@router.post("/role-requests/{request_id}/reject")
+def reject_role_upgrade_request(
+    request_id: str,
+    body: RejectRoleUpgradeRequest,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    """Reject a role upgrade request. Admin only."""
+    req = db.query(RoleUpgradeRequest).filter(RoleUpgradeRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Role upgrade request not found")
+    
+    if req.status != RoleUpgradeRequestStatus.pending:
+        raise HTTPException(status_code=400, detail=f"Request is already {req.status.value}")
+    
+    # Update the request status
+    req.status = RoleUpgradeRequestStatus.rejected
+    req.reviewed_by_id = admin.id
+    req.decision_reason = body.decision_reason
+    
+    db.commit()
+    
+    return {
+        "detail": "Role upgrade request rejected",
+        "user_id": str(req.user_id),
+    }
+

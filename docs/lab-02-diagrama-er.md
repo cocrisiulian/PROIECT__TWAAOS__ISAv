@@ -124,6 +124,7 @@ erDiagram
 ```
 
 ## Constrangeri importante
+
 - unique users.username
 - unique users.email
 - unique students.email
@@ -132,6 +133,7 @@ erDiagram
 - unique (event_id, student_id) in feedback
 
 ## Observatii
+
 - Modelul separa clar conturile staff (users) de conturile studenti autentificati Google (students).
 - Fluxul de aprobare este explicit prin approved_by_id si approved_at in events.
 - Entitatile pentru participare si feedback sunt normalizate si permit raportare ulterioara.

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { signUp } from '../../api/auth.js';
 import { useAuthStore } from '../../store/authStore.js';
 import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ function SignupPage() {
   if (token) {
     if (role === 'admin') return <Navigate to={localizedTo('/admin')} replace />;
     if (role === 'organizer') return <Navigate to={localizedTo('/organizer')} replace />;
+    if (role === 'visitor') return <Navigate to={localizedTo('/visitor/role-request')} replace />;
     return <Navigate to={localizedTo('/events')} replace />;
   }
 
@@ -67,8 +69,8 @@ function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
+    <PageFrame centered showNavbar={false}>
+      <div className="usv-card usv-card-body w-full max-w-lg">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.signup.title')}</h1>
         <p className="text-sm text-gray-500 mb-6">{t('auth.signup.subtitle')}</p>
 
@@ -79,7 +81,7 @@ function SignupPage() {
               type="text"
               value={form.username}
               onChange={onChange('username')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="usv-input"
               autoComplete="username"
               placeholder={t('auth.signup.usernamePlaceholder')}
             />
@@ -91,7 +93,7 @@ function SignupPage() {
               type="text"
               value={form.full_name}
               onChange={onChange('full_name')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="usv-input"
               autoComplete="name"
               placeholder={t('auth.signup.fullNamePlaceholder')}
             />
@@ -103,7 +105,7 @@ function SignupPage() {
               type="email"
               value={form.email}
               onChange={onChange('email')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="usv-input"
               autoComplete="email"
               placeholder={t('auth.signup.emailPlaceholder')}
             />
@@ -115,7 +117,7 @@ function SignupPage() {
               type="password"
               value={form.password}
               onChange={onChange('password')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="usv-input"
               autoComplete="new-password"
               placeholder={t('auth.signup.passwordHint')}
             />
@@ -127,7 +129,7 @@ function SignupPage() {
               type="password"
               value={form.confirmPassword}
               onChange={onChange('confirmPassword')}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="usv-input"
               autoComplete="new-password"
               placeholder={t('auth.signup.confirmPasswordHint')}
             />
@@ -136,7 +138,7 @@ function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium px-6 py-3 rounded-lg transition disabled:opacity-50"
+            className="usv-button-primary w-full"
           >
             {loading ? t('auth.signup.creatingAccount') : t('auth.signup.signUp')}
           </button>
@@ -149,7 +151,7 @@ function SignupPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </PageFrame>
   );
 }
 

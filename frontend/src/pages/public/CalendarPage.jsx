@@ -9,7 +9,7 @@ import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { getEvents } from '../../api/events.js';
 import DayEventsModal from '../../components/events/DayEventsModal.jsx';
-import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 import './CalendarPage.css';
 
@@ -116,32 +116,28 @@ export default function CalendarPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('public.calendar.title')}</h1>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,listWeek',
-            }}
-            events={calEvents}
-            eventOrder="start,-duration,title"
-            eventOrderStrict={true}
-            eventMinHeight={44}
-            slotEventOverlap={false}
-            expandRows={true}
-            eventClick={({ event }) => navigate(localizedTo(`/events/${event.id}`))}
-            dateClick={handleDateClick}
-            height="auto"
-            eventDisplay="block"
-            contentHeight="auto"
-          />
-        </div>
+    <PageFrame width="7xl" title={t('public.calendar.title')} contentClassName="space-y-6">
+      <div className="usv-card p-4">
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          headerToolbar={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek',
+          }}
+          events={calEvents}
+          eventOrder="start,-duration,title"
+          eventOrderStrict={true}
+          eventMinHeight={44}
+          slotEventOverlap={false}
+          expandRows={true}
+          eventClick={({ event }) => navigate(localizedTo(`/events/${event.id}`))}
+          dateClick={handleDateClick}
+          height="auto"
+          eventDisplay="block"
+          contentHeight="auto"
+        />
       </div>
 
       <DayEventsModal
@@ -150,6 +146,6 @@ export default function CalendarPage() {
         isOpen={showDayModal}
         onClose={() => setShowDayModal(false)}
       />
-    </div>
+    </PageFrame>
   );
 }

@@ -22,6 +22,9 @@ import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import UserManagementPage from './pages/admin/UserManagementPage.jsx';
 import PendingEventsPage from './pages/admin/PendingEventsPage.jsx';
 import ReportsPage from './pages/admin/ReportsPage.jsx';
+import GitHubAnalyzer from './pages/admin/GitHubAnalyzer.jsx';
+import AdminRoleRequestsPage from './pages/admin/AdminRoleRequestsPage.jsx';
+import VisitorRoleRequestPage from './pages/visitor/VisitorRoleRequestPage.jsx';
 import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
@@ -43,8 +46,13 @@ function AppRoutes() {
       <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="auth/callback" element={<GoogleCallbackPage />} />
 
+      {/* Visitor routes */}
+      <Route element={<AuthGuard allowedRoles={['visitor']} />}>
+        <Route path="visitor/role-request" element={<VisitorRoleRequestPage />} />
+      </Route>
+
       {/* Account routes */}
-      <Route element={<AuthGuard allowedRoles={['student', 'organizer', 'admin']} />}>
+      <Route element={<AuthGuard allowedRoles={['student', 'organizer', 'admin', 'visitor']} />}>
         <Route path="account" element={<AccountManagementPage />} />
       </Route>
 
@@ -64,6 +72,8 @@ function AppRoutes() {
         <Route path="admin/users" element={<UserManagementPage />} />
         <Route path="admin/events/pending" element={<PendingEventsPage />} />
         <Route path="admin/reports" element={<ReportsPage />} />
+        <Route path="admin/github" element={<GitHubAnalyzer />} />
+        <Route path="admin/role-requests" element={<AdminRoleRequestsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="events" replace />} />

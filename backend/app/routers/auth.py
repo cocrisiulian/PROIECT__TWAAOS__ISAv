@@ -27,6 +27,7 @@ from app.schemas.auth_schemas import (
     GoogleCallbackRequest,
     UserInfo,
 )
+from app.services.email import send_password_reset_link
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -75,11 +76,6 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
         )
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
-    if user.role == UserRole.visitor:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account role is visitor. Ask an administrator to assign organizer/admin access.",
-        )
 
     token = create_access_token(
         {"sub": str(user.id), "role": user.role.value},
@@ -139,6 +135,13 @@ def request_password_reset(body: PasswordResetRequest, db: Session = Depends(get
             "reset_password",
             {"sub": str(user.id), "email": user.email},
             expires_delta=timedelta(minutes=settings.RESET_PASSWORD_TOKEN_EXPIRE_MINUTES),
+        )
+        
+        # Send password reset email
+        send_password_reset_link(
+            recipient_email=user.email,
+            recipient_name=user.full_name,
+            reset_token=reset_token,
         )
 
     response = PasswordResetRequestResponse(

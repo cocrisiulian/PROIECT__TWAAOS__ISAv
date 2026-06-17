@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import Navbar from '../../components/layout/Navbar.jsx';
 import LanguageSwitcher from '../../components/layout/LanguageSwitcher.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
+import RequestRoleUpgrade from '../../components/admin/RequestRoleUpgrade.jsx';
 import { getMyAccountOverview, updateMyAccountProfile } from '../../api/account.js';
 import { getDepartments, getFaculties } from '../../api/events.js';
 import { getMyEvents } from '../../api/organizer.js';
 import { getEventsPerMonth, getPendingEvents, getUsers } from '../../api/admin.js';
-import { useAuthStore } from '../../store/authStore.js';
+import { useAuthStore, getRoleFromToken } from '../../store/authStore.js';
 import { getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 function getCurrentMonthValue() {
@@ -19,6 +20,8 @@ function getCurrentMonthValue() {
 export default function AccountManagementPage() {
   const { t, i18n } = useTranslation();
   const { role, token } = useAuthStore();
+  const storedToken = token || localStorage.getItem('auth_token');
+  const effectiveRole = role || (storedToken ? getRoleFromToken(storedToken) : null);
   const queryClient = useQueryClient();
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue());
   const [fullName, setFullName] = useState('');
@@ -28,8 +31,8 @@ export default function AccountManagementPage() {
 
   const [year, month] = selectedMonth.split('-').map((value) => parseInt(value, 10));
   const locale = normalizeLanguage(i18n.language) === 'en' ? 'en-GB' : 'ro-RO';
-  const canAccessAccount = role === 'student' || role === 'organizer' || role === 'admin';
-  const isAccountQueryEnabled = Boolean(token) && canAccessAccount;
+  const canAccessAccount = effectiveRole === 'student' || effectiveRole === 'organizer' || effectiveRole === 'admin' || effectiveRole === 'visitor';
+  const isAccountQueryEnabled = Boolean(storedToken) && effectiveRole !== 'visitor';
 
   const accountQuery = useQuery({
     queryKey: ['account-overview', year, month],
@@ -113,7 +116,7 @@ export default function AccountManagementPage() {
       full_name: fullName.trim(),
     };
 
-    if (role === 'student') {
+    if (effectiveRole === 'student') {
       payload.faculty_id = facultyId ? Number(facultyId) : null;
       payload.department_id = departmentId ? Number(departmentId) : null;
     }
@@ -149,22 +152,107 @@ export default function AccountManagementPage() {
 
   if (!canAccessAccount) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <Navbar />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <PageFrame width="5xl" title={t('account.title')} subtitle={t('account.subtitle')}>
+        <div className="max-w-3xl mx-auto py-2">
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-amber-800">
             {t('account.noAccess')}
           </div>
         </div>
-      </div>
+      </PageFrame>
+    );
+  }
+
+  // Show limited content for visitors
+  if (effectiveRole === 'visitor') {
+    return (
+      <PageFrame
+        title={t('account.title')}
+        subtitle={t('account.subtitle')}
+        actions={<LanguageSwitcher />}
+        contentClassName="space-y-6"
+      >
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{t('account.title')}</h1>
+              <p className="text-slate-600">{t('account.subtitle')}</p>
+            </div>
+            <div className="self-start md:self-auto rounded-lg border border-slate-200 bg-white px-3 py-2">
+              <LanguageSwitcher />
+            </div>
+          </div>
+
+          {accountQuery.isLoading ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+              {t('account.loading')}
+            </div>
+          ) : accountQuery.isError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+              {t('account.loadError')}
+            </div>
+          ) : (
+            <>
+              <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <article className="xl:col-span-2 rounded-xl border border-slate-200 bg-white p-6">
+                  <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('account.profile.title')}</h2>
+                  <form onSubmit={submitProfile} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="flex flex-col gap-1 text-sm text-slate-700">
+                        {t('account.profile.fullName')}
+                        <input
+                          value={fullName}
+                          onChange={(event) => setFullName(event.target.value)}
+                          className="rounded-lg border border-slate-300 px-3 py-2"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-sm text-slate-700">
+                        {t('account.profile.email')}
+                        <input
+                          value={profile?.email || ''}
+                          disabled
+                          className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-slate-600"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={saveMutation.isPending}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                      >
+                        {saveMutation.isPending ? t('account.profile.saving') : t('account.profile.save')}
+                      </button>
+                      {saveMessage && <p className="text-sm text-slate-600">{saveMessage}</p>}
+                    </div>
+                  </form>
+                </article>
+
+                <article className="rounded-xl border border-slate-200 bg-white p-6">
+                  <h2 className="text-lg font-semibold text-slate-900 mb-3">{t('account.generalInfo.title')}</h2>
+                  <div className="space-y-2 text-sm text-slate-700">
+                    <p><span className="font-medium">{t('account.generalInfo.memberSince')}:</span> {profile?.member_since ? new Date(profile.member_since).toLocaleDateString(locale) : '-'}</p>
+                    <p><span className="font-medium">{t('account.generalInfo.role')}:</span> Visitor</p>
+                  </div>
+                </article>
+              </section>
+
+              <RequestRoleUpgrade />
+            </>
+          )}
+        </div>
+      </PageFrame>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <PageFrame
+      title={t('account.title')}
+      subtitle={t('account.subtitle')}
+      actions={<LanguageSwitcher />}
+      contentClassName="space-y-6"
+    >
+      <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{t('account.title')}</h1>
@@ -391,6 +479,6 @@ export default function AccountManagementPage() {
           </>
         )}
       </div>
-    </div>
+    </PageFrame>
   );
 }

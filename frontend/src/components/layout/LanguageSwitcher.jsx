@@ -32,8 +32,8 @@ function LanguageSwitcher() {
   };
 
   return (
-    <div className="inline-flex items-center gap-2 bg-white/95 border border-gray-200 shadow-sm rounded-lg px-2.5 py-1.5">
-      <label htmlFor="language-switcher" className="text-xs font-medium text-gray-600">
+    <div className="usv-surface inline-flex items-center gap-2 px-3 py-2">
+      <label htmlFor="language-switcher" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {t('common.language')}
       </label>
       <select
@@ -41,7 +41,7 @@ function LanguageSwitcher() {
         aria-label={t('common.language')}
         value={activeLanguage}
         onChange={handleLanguageChange}
-        className="text-sm font-medium border border-gray-300 rounded-md bg-white px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
       >
         {SUPPORTED_LANGUAGES.map((language) => (
           <option key={language} value={language}>

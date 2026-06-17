@@ -26,6 +26,9 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-events_db}
       SECRET_KEY: ${SECRET_KEY:-usv-events-super-secret-key-change-in-production-2024}
+      APP_ENV: ${APP_ENV:-development}
+      FORCE_HTTPS_REDIRECT: ${FORCE_HTTPS_REDIRECT:-false}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend,frontend}
       ALGORITHM: ${ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
@@ -35,10 +38,20 @@ services:
       UPLOAD_DIR: /app/uploads
       AUTO_MIGRATE_ON_STARTUP: ${AUTO_MIGRATE_ON_STARTUP:-true}
       AUTO_SEED_ON_STARTUP: ${AUTO_SEED_ON_STARTUP:-true}
+      EXPOSE_RESET_TOKEN_FOR_TESTING: ${EXPOSE_RESET_TOKEN_FOR_TESTING:-false}
+      # Email Configuration (SMTP)
+      SMTP_SERVER: ${SMTP_SERVER:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: no-reply@usv.ro
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-USV Events}
+      ENABLE_EMAIL: ${ENABLE_EMAIL:-false}
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./docs:/docs
       - uploads_data:/app/uploads
     depends_on:
       db:
@@ -60,6 +73,49 @@ services:
     depends_on:
       - backend
 
+  sonarqube:
+    image: sonarqube:community
+    container_name: usv_events_sonarqube
+    restart: unless-stopped
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube_db:5432/sonarqube
+      - SONAR_JDBC_USERNAME=${SONARQUBE_DB_USER:-sonarqube}
+      - SONAR_JDBC_PASSWORD=${SONARQUBE_DB_PASSWORD:-sonarqube}
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      sonarqube_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/system/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  sonarqube_db:
+    image: postgres:16-alpine
+    container_name: usv_events_sonarqube_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sonarqube
+      POSTGRES_USER: ${SONARQUBE_DB_USER:-sonarqube}
+      POSTGRES_PASSWORD: ${SONARQUBE_DB_PASSWORD:-sonarqube}
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SONARQUBE_DB_USER:-sonarqube} -d sonarqube"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   uploads_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  sonarqube_db_data:

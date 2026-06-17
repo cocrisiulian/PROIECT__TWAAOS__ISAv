@@ -2,6 +2,7 @@ import json
 from typing import Optional, List
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, and_, or_
 
@@ -15,9 +16,46 @@ from app.models.feedback import Feedback
 from app.core.dependencies import get_optional_student, get_current_student
 from app.schemas.event_schemas import EventListItem, EventDetail
 from app.schemas.lookup_schemas import FacultyRead, DepartmentRead, CategoryRead
-from app.schemas.registration_schemas import FeedbackCreate, FeedbackRead
+from app.schemas.registration_schemas import (
+    FeedbackCreate,
+    FeedbackRead,
+    TicketIssueRead,
+    TicketValidationRead,
+)
+from app.services.ticketing import build_ticket_token, render_ticket_qr_base64, decode_ticket_token
+from app.services.email import send_registration_confirmation
 
 router = APIRouter(tags=["Public"])
+
+
+def _promote_next_waitlisted_registration(db: Session, event_id):
+    from app.models.student import Student
+    
+    next_waitlisted = db.query(EventRegistration).filter(
+        EventRegistration.event_id == event_id,
+        EventRegistration.status == RegistrationStatus.waitlist,
+    ).order_by(EventRegistration.registered_at.asc()).first()
+
+    if not next_waitlisted:
+        return None
+
+    next_waitlisted.status = RegistrationStatus.registered
+    db.commit()
+    
+    # Send promotion email to the student
+    student = db.query(Student).filter(Student.id == next_waitlisted.student_id).first()
+    event = db.query(Event).filter(Event.id == event_id).first()
+    
+    if student and event:
+        send_registration_confirmation(
+            recipient_email=student.email,
+            recipient_name=student.full_name,
+            event_title=event.title,
+            event_date=event.date,
+            status="registered",
+        )
+    
+    return next_waitlisted
 
 
 def _build_event_query(db, **filters):
@@ -234,6 +272,16 @@ def register_for_event(
             )
             db.add(reg)
             db.commit()
+            
+            # Send waitlist confirmation email
+            send_registration_confirmation(
+                recipient_email=student.email,
+                recipient_name=student.full_name,
+                event_title=event.title,
+                event_date=event.date,
+                status="waitlist",
+            )
+            
             return {
                 "detail": "Event is full. Added to waitlist",
                 "status": "waitlist",
@@ -245,6 +293,16 @@ def register_for_event(
     )
     db.add(reg)
     db.commit()
+    
+    # Send registration confirmation email
+    send_registration_confirmation(
+        recipient_email=student.email,
+        recipient_name=student.full_name,
+        event_title=event.title,
+        event_date=event.date,
+        status="registered",
+    )
+    
     return {"detail": "Registered successfully", "status": "registered"}
 
 
@@ -260,9 +318,72 @@ def unregister_from_event(
     ).first()
     if not reg:
         raise HTTPException(status_code=404, detail="Registration not found")
+    should_promote_waitlist = reg.status == RegistrationStatus.registered
     db.delete(reg)
     db.commit()
+
+    if should_promote_waitlist:
+        _promote_next_waitlisted_registration(db, event_id)
+
     return {"detail": "Unregistered successfully"}
+
+
+@router.get("/events/{event_id}/ticket", response_model=TicketIssueRead)
+def get_event_ticket(
+    event_id: str,
+    db: Session = Depends(get_db),
+    student=Depends(get_current_student),
+):
+    event = db.query(Event).filter(Event.id == event_id, Event.status == EventStatus.published).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    registration = db.query(EventRegistration).filter(
+        EventRegistration.event_id == event.id,
+        EventRegistration.student_id == student.id,
+        EventRegistration.status == RegistrationStatus.registered,
+    ).first()
+    if not registration:
+        raise HTTPException(status_code=404, detail="Ticket available only after registration")
+
+    ticket_token = build_ticket_token(registration)
+    return TicketIssueRead(
+        event_id=event.id,
+        registration_id=registration.id,
+        event_title=event.title,
+        attendee_name=student.full_name,
+        ticket_token=ticket_token,
+        qr_code_base64=render_ticket_qr_base64(ticket_token),
+    )
+
+
+@router.get("/tickets/verify/{ticket_token}", response_model=TicketValidationRead)
+def verify_ticket(
+    ticket_token: str,
+    db: Session = Depends(get_db),
+):
+    payload = decode_ticket_token(ticket_token)
+    if not payload:
+        raise HTTPException(status_code=400, detail="Invalid or expired ticket token")
+
+    registration = db.query(EventRegistration).options(joinedload(EventRegistration.student), joinedload(EventRegistration.event)).filter(
+        EventRegistration.id == payload.get("registration_id"),
+        EventRegistration.event_id == payload.get("event_id"),
+        EventRegistration.student_id == payload.get("student_id"),
+        EventRegistration.status == RegistrationStatus.registered,
+    ).first()
+    if not registration or not registration.event or not registration.student:
+        raise HTTPException(status_code=404, detail="Ticket is no longer valid")
+
+    return TicketValidationRead(
+        valid=True,
+        event_id=registration.event.id,
+        registration_id=registration.id,
+        attendee_name=registration.student.full_name,
+        event_title=registration.event.title,
+        checked_in=registration.checked_in,
+        checked_in_at=registration.checked_in_at,
+    )
 
 
 @router.post("/events/{event_id}/feedback", response_model=FeedbackRead)

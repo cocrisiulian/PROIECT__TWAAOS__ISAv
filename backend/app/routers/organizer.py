@@ -17,9 +17,11 @@ from app.core.dependencies import require_organizer
 from app.models.event import Event, EventStatus
 from app.models.event_material import EventMaterial, MaterialType
 from app.models.event_registration import EventRegistration
+from app.models.event_registration import RegistrationStatus
 from app.models.feedback import Feedback
 from app.schemas.event_schemas import EventCreate, EventUpdate, EventDetail, EventListItem, EventStatusUpdate
-from app.schemas.registration_schemas import RegistrationRead, EventStatsRead
+from app.schemas.registration_schemas import RegistrationRead, EventStatsRead, TicketValidationRequest
+from app.services.ticketing import decode_ticket_token
 
 router = APIRouter(prefix="/organizer", tags=["Organizer"])
 
@@ -253,6 +255,41 @@ def check_in_participant(
     reg.checked_in_at = datetime.utcnow()
     db.commit()
     return {"detail": "Checked in"}
+
+
+@router.post("/events/{event_id}/checkin-ticket")
+def check_in_participant_by_ticket(
+    event_id: str,
+    body: TicketValidationRequest,
+    db: Session = Depends(get_db),
+    user=Depends(require_organizer),
+):
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event or str(event.organizer_id) != str(user.id):
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    payload = decode_ticket_token(body.ticket_token)
+    if not payload:
+        raise HTTPException(status_code=400, detail="Invalid or expired ticket token")
+    if str(payload.get("event_id")) != str(event.id):
+        raise HTTPException(status_code=400, detail="Ticket does not belong to this event")
+
+    reg = db.query(EventRegistration).filter(
+        EventRegistration.id == payload.get("registration_id"),
+        EventRegistration.event_id == event.id,
+        EventRegistration.student_id == payload.get("student_id"),
+    ).first()
+    if not reg:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    if reg.status != RegistrationStatus.registered:
+        raise HTTPException(status_code=400, detail="Ticket is not valid for check-in")
+    if reg.checked_in:
+        return {"detail": "Already checked in"}
+
+    reg.checked_in = True
+    reg.checked_in_at = datetime.utcnow()
+    db.commit()
+    return {"detail": "Checked in via ticket", "registration_id": str(reg.id)}
 
 
 @router.post("/images/cover", status_code=201)

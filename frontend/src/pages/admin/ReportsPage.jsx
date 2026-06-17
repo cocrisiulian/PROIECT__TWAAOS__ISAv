@@ -6,12 +6,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { getEventsPerMonth, getAvgParticipation, getEventsPerOrganizer, getAllEvents } from '../../api/admin';
-import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 import { DEFAULT_LANGUAGE, getPathWithLanguage, normalizeLanguage } from '../../i18n/config.js';
 
 function StatCard({ title, value, sub }) {
   return (
-    <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
+    <div className="usv-card usv-card-body">
       <p className="text-sm text-gray-500">{title}</p>
       <p className="text-3xl font-bold text-gray-800 mt-1">{value ?? '—'}</p>
       {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
@@ -99,160 +99,144 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{t('admin.reports.title')}</h1>
-        </div>
+    <PageFrame width="7xl" title={t('admin.reports.title')} contentClassName="space-y-6">
+      <div className="flex flex-wrap gap-2">
+        <Link to={localizedTo('/admin')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
+          {t('admin.users.dashboardLink')}
+        </Link>
+        <Link to={localizedTo('/admin/events/pending')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
+          {t('admin.users.pendingLink')}
+        </Link>
+        <Link to={localizedTo('/admin/users')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
+          {t('admin.users.title')}
+        </Link>
+      </div>
 
-        {/* Navigation tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Link to={localizedTo('/admin')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
-            {t('admin.users.dashboardLink')}
-          </Link>
-          <Link to={localizedTo('/admin/events/pending')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
-            {t('admin.users.pendingLink')}
-          </Link>
-          <Link to={localizedTo('/admin/users')} className="border px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100">
-            {t('admin.users.title')}
-          </Link>
-        </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard
+          title={t('admin.reports.avgParticipants')}
+          value={avgValue !== null ? Number(avgValue).toFixed(1) : '—'}
+          sub={t('admin.reports.avgParticipantsSub')}
+        />
+        <StatCard
+          title={t('admin.reports.monthsWithData')}
+          value={monthlyData.length}
+          sub={t('admin.reports.monthsWithDataSub')}
+        />
+        <StatCard
+          title={t('admin.reports.activeOrganizers')}
+          value={organizerData.length}
+          sub={t('admin.reports.activeOrganizersSub')}
+        />
+      </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <StatCard
-            title={t('admin.reports.avgParticipants')}
-            value={avgValue !== null ? Number(avgValue).toFixed(1) : '—'}
-            sub={t('admin.reports.avgParticipantsSub')}
-          />
-          <StatCard
-            title={t('admin.reports.monthsWithData')}
-            value={monthlyData.length}
-            sub={t('admin.reports.monthsWithDataSub')}
-          />
-          <StatCard
-            title={t('admin.reports.activeOrganizers')}
-            value={organizerData.length}
-            sub={t('admin.reports.activeOrganizersSub')}
-          />
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Events per month */}
-          <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
-            <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.monthlyChart')}</h2>
-            {monthlyData.length === 0 ? (
-              <p className="text-sm text-gray-400">{t('admin.reports.noData')}</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={monthlyData} margin={{ left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-
-          {/* Events per organizer */}
-          <div className="bg-white rounded-xl shadow p-5 border border-gray-100">
-            <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.organizerChart')}</h2>
-            {organizerData.length === 0 ? (
-              <p className="text-sm text-gray-400">{t('admin.reports.noData')}</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={organizerData} layout="vertical" margin={{ left: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="organizer" type="category" tick={{ fontSize: 11 }} width={100} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-
-        {/* All Events Table */}
-        <div className="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.allEvents') || 'Raport Complet - Toate Evenimentele'}</h2>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="text"
-                placeholder={t('admin.pending.searchPlaceholder')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40"
-              >
-                <option value="all">{t('admin.reports.allStatuses')}</option>
-                <option value="approved">{t('admin.reports.approved')}</option>
-                <option value="pending">{t('admin.reports.pending')}</option>
-                <option value="rejected">{t('admin.reports.rejected')}</option>
-                <option value="deleted">{t('admin.reports.deleted')}</option>
-                <option value="cancelled">{t('admin.reports.cancelled')}</option>
-              </select>
-            </div>
-          </div>
-
-          {eventsLoading ? (
-            <div className="px-6 py-8 text-center text-gray-500">
-              {t('admin.pending.loading')}
-            </div>
-          ) : allEvents.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-400">
-              {t('admin.pending.noEvents')}
-            </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="usv-card usv-card-body">
+          <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.monthlyChart')}</h2>
+          {monthlyData.length === 0 ? (
+            <p className="text-sm text-gray-400">{t('admin.reports.noData')}</p>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-sm font-semibold text-gray-700 border-b border-gray-200">
-                <div className="col-span-3">{t('admin.reports.tableHeaders.title')}</div>
-                <div className="col-span-2">{t('admin.reports.tableHeaders.organizer')}</div>
-                <div className="col-span-2">{t('admin.reports.tableHeaders.date')}</div>
-                <div className="col-span-2">{t('admin.reports.tableHeaders.status')}</div>
-                <div className="col-span-3">{t('admin.reports.tableHeaders.registrations')}</div>
-              </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={monthlyData} margin={{ left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
 
-              {/* Table Body */}
-              {allEvents.map((event) => (
-                <div key={event.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition">
-                  <div className="col-span-3">
-                    <p className="font-semibold text-gray-800 text-sm">{event.title}</p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{event.description}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-700">{event.organizer_name || event.organizer?.full_name || '-'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-700">
-                      {event.start_date ? new Date(event.start_date).toLocaleDateString(dateLocale) : '-'}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(event.status).color}`}>
-                      {getStatusBadge(event.status).label}
-                    </span>
-                  </div>
-                  <div className="col-span-3">
-                    <p className="text-sm text-gray-700">{event.registration_count ?? 0} {t('admin.reports.registrationsSuffix')}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="usv-card usv-card-body">
+          <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.organizerChart')}</h2>
+          {organizerData.length === 0 ? (
+            <p className="text-sm text-gray-400">{t('admin.reports.noData')}</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={organizerData} layout="vertical" margin={{ left: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="organizer" type="category" tick={{ fontSize: 11 }} width={100} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           )}
         </div>
       </div>
-    </div>
+
+      <div className="usv-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="font-semibold text-gray-700 mb-4">{t('admin.reports.allEvents') || 'Raport Complet - Toate Evenimentele'}</h2>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <input
+              type="text"
+              placeholder={t('admin.pending.searchPlaceholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40"
+            >
+              <option value="all">{t('admin.reports.allStatuses')}</option>
+              <option value="approved">{t('admin.reports.approved')}</option>
+              <option value="pending">{t('admin.reports.pending')}</option>
+              <option value="rejected">{t('admin.reports.rejected')}</option>
+              <option value="deleted">{t('admin.reports.deleted')}</option>
+              <option value="cancelled">{t('admin.reports.cancelled')}</option>
+            </select>
+          </div>
+        </div>
+
+        {eventsLoading ? (
+          <div className="px-6 py-8 text-center text-gray-500">
+            {t('admin.pending.loading')}
+          </div>
+        ) : allEvents.length === 0 ? (
+          <div className="px-6 py-8 text-center text-gray-400">
+            {t('admin.pending.noEvents')}
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-sm font-semibold text-gray-700 border-b border-gray-200">
+              <div className="col-span-3">{t('admin.reports.tableHeaders.title')}</div>
+              <div className="col-span-2">{t('admin.reports.tableHeaders.organizer')}</div>
+              <div className="col-span-2">{t('admin.reports.tableHeaders.date')}</div>
+              <div className="col-span-2">{t('admin.reports.tableHeaders.status')}</div>
+              <div className="col-span-3">{t('admin.reports.tableHeaders.registrations')}</div>
+            </div>
+
+            {allEvents.map((event) => (
+              <div key={event.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition">
+                <div className="col-span-3">
+                  <p className="font-semibold text-gray-800 text-sm">{event.title}</p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-1">{event.description}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-700">{event.organizer_name || event.organizer?.full_name || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-700">
+                    {event.start_date ? new Date(event.start_date).toLocaleDateString(dateLocale) : '-'}
+                  </p>
+                </div>
+                <div className="col-span-2">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(event.status).color}`}>
+                    {getStatusBadge(event.status).label}
+                  </span>
+                </div>
+                <div className="col-span-3">
+                  <p className="text-sm text-gray-700">{event.registration_count ?? 0} {t('admin.reports.registrationsSuffix')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </PageFrame>
   );
 }

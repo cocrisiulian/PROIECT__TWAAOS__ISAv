@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { getEvent, registerForEvent, unregisterFromEvent } from '../../api/events.js';
+import { getEvent, registerForEvent, unregisterFromEvent, getEventTicket } from '../../api/events.js';
 import { useAuthStore } from '../../store/authStore.js';
 import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 import FeedbackForm from '../../components/events/FeedbackForm.jsx';
 import { getCoverImageUrl } from '../../utils/coverImage.js';
 import { toPublicAssetUrl } from '../../utils/assetUrl.js';
@@ -27,11 +28,38 @@ function QRModal({ eventId, onClose, t }) {
   );
 }
 
+function TicketModal({ ticket, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Event ticket</p>
+            <h3 className="mt-1 text-xl font-bold text-slate-900">{ticket.event_title}</h3>
+          </div>
+          <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-900">Close</button>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+          <img
+            src={`data:image/png;base64,${ticket.qr_code_base64}`}
+            alt="Event ticket QR"
+            className="mx-auto h-56 w-56 rounded-xl bg-white p-2"
+          />
+          <p className="mt-3 text-sm font-medium text-slate-700">{ticket.attendee_name}</p>
+          <p className="text-xs text-slate-500 break-all mt-1">Ticket token: {ticket.ticket_token}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EventDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const { token, role } = useAuthStore();
   const [showQR, setShowQR] = useState(false);
+  const [ticket, setTicket] = useState(null);
   const queryClient = useQueryClient();
 
   const localizedTo = (path) => getPathWithLanguage(path, normalizeLanguage(i18n.language));
@@ -56,18 +84,30 @@ export default function EventDetailPage() {
     onError: (err) => toast.error(err.response?.data?.detail || 'Failed to unregister'),
   });
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-gray-50"><Navbar />
-      <div className="flex justify-center items-center py-32">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    </div>
-  );
-  if (isError || !event) return (
-    <div className="min-h-screen bg-gray-50"><Navbar />
-      <p className="text-center text-red-500 py-20">Event not found.</p>
-    </div>
-  );
+  const ticketMutation = useMutation({
+    mutationFn: () => getEventTicket(id),
+    onSuccess: (response) => {
+      setTicket(response.data);
+    },
+    onError: (err) => toast.error(err.response?.data?.detail || 'Failed to load ticket'),
+  });
+
+  if (isLoading) {
+    return (
+      <PageFrame title="Event details">
+        <div className="flex justify-center items-center py-32">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </PageFrame>
+    );
+  }
+  if (isError || !event) {
+    return (
+      <PageFrame title="Event details">
+        <p className="text-center text-red-500 py-20">Event not found.</p>
+      </PageFrame>
+    );
+  }
 
   const isPast = new Date(event.end_datetime) < new Date();
   const canFeedback = role === 'student' && isPast;
@@ -87,11 +127,11 @@ export default function EventDetailPage() {
   })();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="usv-page-shell">
       <Navbar />
       {showQR && <QRModal eventId={id} onClose={() => setShowQR(false)} t={t} />}
+      {ticket && <TicketModal ticket={ticket} onClose={() => setTicket(null)} />}
 
-      {/* Cover */}
       <div className="h-56 sm:h-72 bg-gradient-to-br from-blue-300 to-indigo-400 relative overflow-hidden">
         {backgroundCover && (
           <>
@@ -114,17 +154,16 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <PageFrame showNavbar={false} width="6xl" className="pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left - Description + Materials */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="usv-card usv-card-body">
               <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.aboutEvent')}</h2>
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{event.description}</p>
             </div>
 
             {event.materials && event.materials.length > 0 && (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="usv-card usv-card-body">
                 <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.materials')}</h2>
                 <ul className="space-y-2">
                   {event.materials.map((m) => (
@@ -147,16 +186,15 @@ export default function EventDetailPage() {
             )}
 
             {canFeedback && (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="usv-card usv-card-body">
                 <h2 className="text-lg font-semibold mb-3">{t('public.eventDetail.feedback')}</h2>
                 <FeedbackForm eventId={id} />
               </div>
             )}
           </div>
 
-          {/* Right - Info Card */}
           <div className="space-y-4">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3">
+            <div className="usv-card usv-card-body space-y-3">
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{t('public.eventDetail.date')}</p>
                 <p className="text-sm font-medium mt-0.5">
@@ -211,8 +249,7 @@ export default function EventDetailPage() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-2">
+            <div className="usv-card usv-card-body space-y-2">
               <a
                 href={`/api/v1/events/${id}/export.ics`}
                 className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition w-full"
@@ -275,10 +312,19 @@ export default function EventDetailPage() {
                   Locuri epuizate: ești înscris în lista de așteptare.
                 </p>
               )}
+              {role === 'student' && event.is_registered && !event.is_waitlisted && (
+                <button
+                  onClick={() => ticketMutation.mutate()}
+                  disabled={ticketMutation.isPending}
+                  className="w-full text-sm bg-slate-900 text-white py-2 px-4 rounded-lg hover:bg-slate-800 transition"
+                >
+                  View ticket
+                </button>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </PageFrame>
     </div>
   );
 }

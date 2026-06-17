@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getEvents } from '../../api/events.js';
 import EventCard from '../../components/events/EventCard.jsx';
 import EventFilters from '../../components/events/EventFilters.jsx';
-import Navbar from '../../components/layout/Navbar.jsx';
+import PageFrame from '../../components/layout/PageFrame.jsx';
 
 function Spinner() {
   return (
@@ -51,38 +51,30 @@ export default function EventsListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('public.eventsList.title')}</h1>
-            <p className="text-sm text-gray-500 mt-1">{total} {t('public.eventsList.found')}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-700'}`}
-              title={t('public.eventsList.gridView')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-700'}`}
-              title={t('public.eventsList.listView')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
+    <PageFrame
+      title={t('public.eventsList.title')}
+      subtitle={`${total} ${t('public.eventsList.found')}`}
+      actions={(
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${viewMode === 'grid' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}
+            title={t('public.eventsList.gridView')}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${viewMode === 'list' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}
+            title={t('public.eventsList.listView')}
+          >
+            List
+          </button>
         </div>
-
-        <div className="flex gap-6">
+      )}
+      contentClassName="space-y-6"
+    >
+      <div className="flex gap-6">
           {/* Filters Sidebar */}
           <aside className="w-64 shrink-0 hidden lg:block">
             <EventFilters />
@@ -137,7 +129,6 @@ export default function EventsListPage() {
             )}
           </main>
         </div>
-      </div>
-    </div>
+    </PageFrame>
   );
 }

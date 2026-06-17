@@ -6,6 +6,7 @@ from app.models.event import Event, EventStatus, ParticipationMode
 from app.models.event_material import EventMaterial, MaterialType
 from app.models.event_registration import EventRegistration
 from app.models.feedback import Feedback
+from app.models.role_upgrade_request import RoleUpgradeRequest, RoleUpgradeRequestStatus, RoleType
 
 __all__ = [
     "User", "UserRole",
@@ -16,4 +17,5 @@ __all__ = [
     "EventMaterial", "MaterialType",
     "EventRegistration",
     "Feedback",
+    "RoleUpgradeRequest", "RoleUpgradeRequestStatus", "RoleType",
 ]
